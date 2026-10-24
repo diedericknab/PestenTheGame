@@ -1,0 +1,12 @@
+.env
+.git
+.claude
+.ipynb_checkpoints/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.tar
+instruction.md
+*.zip
+database/
+Caddyfile

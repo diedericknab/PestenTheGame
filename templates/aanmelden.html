@@ -1,0 +1,174 @@
+{% extends "basis.html" %}
+{% block inhoud %}
+{# ---------- AANMELDEN EN INSTELLINGEN (scherm 1) ---------- #}
+<section class="paneel start">
+  <h2>Welkom bij Pesten</h2>
+  <p class="uitleg">Vul je gegevens in en kies hoe je wilt spelen. Je instellingen worden bij je
+    e-mailadres bewaard, zodat ze de volgende keer al klaarstaan.</p>
+
+  <form method="post" action="{{ url_for('start') }}" id="startformulier">
+    <fieldset>
+      <legend>Jouw gegevens</legend>
+      <label class="invoer">
+        <span>E-mailadres</span>
+        <input type="email" name="email" value="{{ email_tekst }}" required maxlength="254"
+               autocomplete="email" inputmode="email" {% if not email_tekst %}autofocus{% endif %}>
+      </label>
+      <label class="invoer">
+        <span>Naam <small>(zien de andere spelers)</small></span>
+        <input type="text" name="naam" value="{{ naam_tekst }}" required maxlength="{{ max_naam }}"
+               autocomplete="nickname">
+      </label>
+      <p class="uitleg" id="speler-uitleg">
+        {% if speler %}Gespeeld: {{ speler.gespeeld }} rondes, gewonnen: {{ speler.gewonnen }}.
+        {% else %}Ben je al eerder aangemeld, dan komen je naam en instellingen terug zodra je je e-mailadres hebt ingevuld.{% endif %}
+      </p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Spelvorm</legend>
+      <div class="keuzes">
+        {% for sleutel, tekst in spelvormen.items() %}
+        <label class="keuze {% if sleutel not in beschikbaar %}uit{% endif %}">
+          <input type="radio" name="spelvorm" value="{{ sleutel }}"
+                 {% if sleutel == instellingen.spelvorm %}checked{% endif %}
+                 {% if sleutel not in beschikbaar %}disabled{% endif %}>
+          <span>{{ tekst }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tegenstanders</legend>
+      <label class="invoer kort">
+        <span>Aantal computerspelers</span>
+        <select name="computers">
+          {% for n in range(min_computers, max_computers + 1) %}
+          <option value="{{ n }}" {% if n == instellingen.computers|int %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="keuzes">
+        {% for sleutel, tekst in niveaus.items() %}
+        <label class="keuze">
+          <input type="radio" name="niveau" value="{{ sleutel }}" {% if sleutel == instellingen.niveau %}checked{% endif %}>
+          <span>{{ tekst }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <div class="tandwiel-rij">
+      <button class="tandwiel" type="button" data-open="instellingen-venster" aria-label="Spelregels en assistent">⚙</button>
+      <span>
+        <b>Spelregels en assistent</b><br>
+        <small class="uitleg" id="samenvatting"></small>
+      </span>
+    </div>
+
+    {# Achter het tandwiel. Het venster staat binnen het formulier, dus de velden gaan mee met Start spel. #}
+    <dialog id="instellingen-venster" class="venster donker">
+      <h3>⚙ Spelregels en assistent</h3>
+      <label class="invoer kort">
+        <span>Kaarten per speler bij de start</span>
+        <select name="startkaarten">
+          {% for n in range(min_startkaarten, max_startkaarten + 1) %}
+          <option value="{{ n }}" {% if n == instellingen.startkaarten|int %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <fieldset>
+        <legend>Assistent</legend>
+        <label class="keuze" id="assistent-keuze">
+          <input type="checkbox" name="assistent" value="1" {% if instellingen.assistent %}checked{% endif %}>
+          <span>Tips tijdens het spel: welke kaart je het best kunt leggen en waarom.
+            <small>Alleen op niveau {{ assistent_niveaus|join(", ") }}.</small></span>
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Spelregels</legend>
+        <div class="keuzes regels">
+          {% for sleutel, tekst in regels.items() %}
+          <label class="keuze">
+            <input type="checkbox" name="regel" value="{{ sleutel }}" {% if instellingen.regels.get(sleutel) %}checked{% endif %}>
+            <span>{{ tekst }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      <button class="knop" type="button" data-sluit>Klaar</button>
+    </dialog>
+
+    <button class="knop groot" type="submit">Start spel</button>
+  </form>
+</section>
+
+<script>
+  (function () {
+    // Bekend e-mailadres: naam, instellingen en scores ophalen en invullen.
+    const formulier = document.getElementById("startformulier");
+    const email = formulier.elements.email;
+    const uitleg = document.getElementById("speler-uitleg");
+    let laatsteEmail = email.value.trim().toLowerCase();
+    let wachten;
+
+    function invullen(instellingen) {
+      for (const veld of formulier.querySelectorAll("[name=spelvorm], [name=niveau]")) {
+        veld.checked = veld.value === instellingen[veld.name];
+      }
+      formulier.elements.computers.value = instellingen.computers;
+      formulier.elements.startkaarten.value = instellingen.startkaarten;
+      for (const veld of formulier.querySelectorAll("[name=regel]")) {
+        veld.checked = Boolean(instellingen.regels[veld.value]);
+      }
+      formulier.elements.assistent.checked = Boolean(instellingen.assistent);
+      bijwerken();
+    }
+
+    // Wat er achter het tandwiel staat, in één regel. De assistent kan alleen op
+    // bepaalde niveaus.
+    const assistentNiveaus = {{ assistent_niveaus|list|tojson }};
+    function bijwerken() {
+      const niveau = formulier.querySelector("[name=niveau]:checked");
+      const mogelijk = niveau && assistentNiveaus.includes(niveau.value);
+      document.getElementById("assistent-keuze").classList.toggle("uit", !mogelijk);
+      const regels = formulier.querySelectorAll("[name=regel]");
+      const aan = [...regels].filter(r => r.checked).length;
+      const assistent = mogelijk ? (formulier.elements.assistent.checked ? "assistent aan" : "assistent uit")
+                                 : "geen assistent op dit niveau";
+      document.getElementById("samenvatting").textContent =
+        `${formulier.elements.startkaarten.value} kaarten · ${aan} van ${regels.length} regels aan · ${assistent}`;
+    }
+    formulier.addEventListener("change", bijwerken);
+    bijwerken();
+
+    async function ophalen() {
+      const adres = email.value.trim().toLowerCase();
+      if (!email.checkValidity() || !adres || adres === laatsteEmail) return;
+      laatsteEmail = adres;
+      try {
+        const antwoord = await fetch("{{ url_for('speler_gegevens') }}", {
+          method: "POST", body: new URLSearchParams({ email: adres }), credentials: "same-origin",
+        });
+        const gegevens = await antwoord.json();
+        if (adres !== email.value.trim().toLowerCase()) return;   // intussen verder getypt
+        if (gegevens.bekend) {
+          formulier.elements.naam.value = gegevens.naam;
+          invullen(gegevens.instellingen);
+          uitleg.textContent = `Welkom terug! Gespeeld: ${gegevens.gespeeld} rondes, gewonnen: ${gegevens.gewonnen}. Je instellingen staan klaar.`;
+        } else {
+          uitleg.textContent = "Nieuw e-mailadres: vul je naam in en kies je instellingen.";
+        }
+      } catch (fout) {
+        laatsteEmail = "";
+      }
+    }
+    email.addEventListener("input", function () {
+      clearTimeout(wachten);
+      wachten = setTimeout(ophalen, 500);
+    });
+    email.addEventListener("change", ophalen);
+  })();
+</script>
+{% endblock %}

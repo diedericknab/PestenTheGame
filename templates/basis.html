@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pesten — kaartspel</title>
+  <!-- Lettertype voor titels en kaarten (Lilita One). Zonder internet valt het terug op Impact. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='kleuren.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='spel.css') }}">
+</head>
+<body data-pagina="{{ 'spel' if spel else 'aanmelden' }}">
+  <header class="kop">
+    <h1 class="logo" aria-label="Pesten">
+      <span class="logo-kaarten" aria-hidden="true"><span>♥</span><span>♠</span><span>♦</span><span>♣</span></span>
+      <span class="logo-tekst" aria-hidden="true">Pesten</span>
+    </h1>
+    {% if email %}
+    <div class="kop-rechts">
+      <span class="aangemeld" title="{{ email }}">{{ naam or email }}</span>
+      {% if spel %}
+      <button class="tandwiel klein" type="button" data-open="spelmenu" aria-label="Menu">⚙</button>
+      {% else %}
+      <form method="post" action="{{ url_for('afmelden') }}">
+        <button class="knop klein secundair" type="submit">Afmelden</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </header>
+
+  {% with berichten = get_flashed_messages(with_categories=true) %}
+    {% if berichten %}
+    <div class="berichten">
+      {% for soort, tekst in berichten %}
+      <div class="bericht {{ soort }}">{{ tekst }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>{% block inhoud %}{% endblock %}</main>
+
+<script>
+  // Mobiele browsers waarschuwen bij elk formulier dat over http (zonder
+  // https) wordt verstuurd. Daarom versturen we de formulieren hier met
+  // fetch(). Komt er weer een spelpagina terug, dan wordt alleen de inhoud
+  // vervangen (geen geknipper); anders de hele pagina. Zonder JavaScript
+  // werken de formulieren gewoon zoals voorheen.
+  // Alles staat in een functie: na document.write draait dit script opnieuw.
+  (function () {
+  let computerTimer = null;
+
+  // Is er een computer aan de beurt, dan vraagt de pagina na een korte pauze
+  // om zijn zet. Zo zie je elke zet gebeuren.
+  function computerBeurt() {
+    clearTimeout(computerTimer);
+    const formulier = document.getElementById("computer-zet");
+    if (formulier) {
+      computerTimer = setTimeout(function stap() {
+        // Staat er een venster open (tandwiel, kleur kiezen), dan wachten de computers.
+        if (document.querySelector("dialog[open]")) computerTimer = setTimeout(stap, 500);
+        else formulier.requestSubmit();
+      }, Number(formulier.dataset.pauze) || 900);
+    }
+  }
+
+  document.addEventListener("submit", async function (e) {
+    const formulier = e.target;
+    const methode = (e.submitter && e.submitter.getAttribute("formmethod")) || formulier.method;
+    if (methode.toLowerCase() !== "post" || !window.fetch) return;
+    e.preventDefault();
+    if (formulier.dataset.bezig) return;   // dubbelklik negeren
+    formulier.dataset.bezig = "1";
+    clearTimeout(computerTimer);
+
+    const knop = e.submitter;
+    if (knop && knop.classList.contains("kaart")) knop.classList.add("wordt-gelegd");
+    const actie = knop && knop.hasAttribute("formaction") ? knop.formAction : formulier.action;
+    const gegevens = new URLSearchParams();
+    for (const [naam, waarde] of new FormData(formulier)) gegevens.append(naam, waarde);
+    if (knop && knop.name) gegevens.append(knop.name, knop.value);
+
+    try {
+      const antwoord = await fetch(actie, { method: "POST", body: gegevens, credentials: "same-origin" });
+      const html = await antwoord.text();
+      const nieuw = new DOMParser().parseFromString(html, "text/html");
+      if (document.body.dataset.pagina === "spel" && nieuw.body.dataset.pagina === "spel") {
+        // Ligt dezelfde kaart nog bovenop, dan niet opnieuw laten neerleggen.
+        const oudeKaart = document.querySelector(".aflegstapel .bovenste");
+        const nieuweKaart = nieuw.querySelector(".aflegstapel .bovenste");
+        if (oudeKaart && nieuweKaart && oudeKaart.dataset.code === nieuweKaart.dataset.code) {
+          nieuweKaart.classList.add("stil");
+        }
+        document.body.replaceWith(document.adoptNode(nieuw.body));
+        computerBeurt();
+      } else {
+        document.open();
+        document.write(html);
+        document.close();
+      }
+    } catch (fout) {
+      delete formulier.dataset.bezig;
+      alert("Er ging iets mis met de verbinding. Probeer het opnieuw.");
+    }
+  });
+
+  // Een boer: eerst een kleur kiezen in het venster, dan pas spelen.
+  document.addEventListener("click", function (e) {
+    // Einde van de ronde: uitslag even wegklikken om de handen van de anderen te zien.
+    if (e.target.closest("[data-wissel-uitslag]")) {
+      document.querySelector(".overlay").classList.toggle("verborgen");
+      return;
+    }
+    // Tandwiel: venster openen en sluiten.
+    const opener = e.target.closest("[data-open]");
+    if (opener) {
+      document.getElementById(opener.dataset.open).showModal();
+      return;
+    }
+    const sluiter = e.target.closest("[data-sluit]");
+    if (sluiter) {
+      sluiter.closest("dialog").close();
+      return;
+    }
+    const boer = e.target.closest("[data-boer]");
+    if (!boer) return;
+    const venster = document.getElementById("kleur-kiezen");
+    venster.querySelector("[name=kaart]").value = boer.dataset.boer;
+    const laatste = document.querySelector("#mijn-hand [name=laatste]");
+    venster.querySelector("[name=laatste]").value = laatste && laatste.checked ? "1" : "";
+    venster.showModal();
+  });
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", computerBeurt);
+  else computerBeurt();
+  })();
+</script>
+</body>
+</html>

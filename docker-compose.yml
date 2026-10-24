@@ -1,0 +1,40 @@
+# Starten:  docker compose up -d --build
+# Daarna:   https://<SPEL_ADRES>   (zie Caddyfile en instruction.md, hoofdstuk 7)
+#
+# SPEL_ADRES zet je in een bestand .env naast dit bestand, bijvoorbeeld:
+#   SPEL_ADRES=spel.jouwdomein.nl          -> certificaat van Let's Encrypt
+#   SPEL_ADRES=192.168.1.50                -> eigen certificaat van Caddy (alleen thuisnetwerk)
+services:
+  spel:
+    build: .
+    image: pesten-spel
+    container_name: pesten-spel
+    restart: unless-stopped
+    # Geen "ports": het spel is alleen via Caddy (https) bereikbaar.
+    environment:
+      SPEL_HTTPS: "1"
+    volumes:
+      # De database (spelers, instellingen en scores).
+      - database:/app/database
+
+  caddy:
+    image: caddy:2.10
+    container_name: pesten-caddy
+    restart: unless-stopped
+    depends_on:
+      - spel
+    ports:
+      - "80:80"       # http: Caddy stuurt door naar https
+      - "443:443"     # https
+      - "443:443/udp" # http/3
+    environment:
+      SPEL_ADRES: ${SPEL_ADRES:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # certificaten
+      - caddy_config:/config
+
+volumes:
+  database:
+  caddy_data:
+  caddy_config:

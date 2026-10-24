@@ -1,0 +1,19 @@
+# Caddy zet https voor het spel en regelt de certificaten.
+# SPEL_ADRES (één adres) komt uit .env, zie docker-compose.yml:
+# - een domeinnaam            -> Caddy haalt een gratis certificaat bij Let's Encrypt
+# - een IP-adres of localhost -> Caddy maakt een eigen certificaat
+#   (de browser vertrouwt dat pas als je het hoofdcertificaat installeert)
+{
+	# Opent iemand het spel via een IP-adres, dan stuurt de browser geen naam mee.
+	# Caddy gebruikt dan het certificaat van dit adres.
+	default_sni {$SPEL_ADRES:localhost}
+}
+
+{$SPEL_ADRES:localhost} {
+	# Dit tls-blok is nodig: zonder tls-instelling gebruikt Caddy default_sni niet.
+	tls {
+		protocols tls1.2 tls1.3
+	}
+	encode gzip
+	reverse_proxy spel:5000
+}

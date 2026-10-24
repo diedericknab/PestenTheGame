@@ -1,0 +1,18 @@
+# Instellingen per machine (SPEL_ADRES)
+.env
+
+# Database met spelers en scores
+database/
+
+# Gebouwde bestanden
+*.zip
+*.tar
+
+# Python en Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Editor en Claude
+.claude/
+.vscode/
