@@ -1,5 +1,6 @@
 # Instellingen per machine (SPEL_ADRES)
 .env
+.env.pi
 
 # Database met spelers en scores
 database/

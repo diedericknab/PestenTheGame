@@ -1,0 +1,69 @@
+{% extends "basis.html" %}
+{% block inhoud %}
+{# ---------- WACHTKAMER (online, voor het spel begint) ---------- #}
+<section class="paneel wachtkamer">
+  <p class="bovenschrift">Wachtkamer</p>
+  <h2>Wie doet er mee?</h2>
+
+  <div class="spelcode">
+    <span class="spelcode-label">Spelcode</span>
+    <span class="spelcode-tekens" aria-label="Spelcode {{ spel.code|join(' ') }}">{% for teken in spel.code %}<span>{{ teken }}</span>{% endfor %}</span>
+    <button class="knop klein" type="button" data-deel="{{ spel.code }}">Link delen</button>
+  </div>
+  <p class="uitleg">De anderen kiezen op hun eigen telefoon of computer <b>Online</b> en vullen deze
+    code in, of ze openen de link die je deelt.</p>
+
+  <ol class="aan-tafel">
+    {% for s in w.spelers %}
+    <li class="{% if s.ik %}ik{% endif %}">
+      <span class="stoel-naam">{{ s.naam }}</span>
+      {% if s.maker %}<span class="label">maakte het spel</span>{% endif %}
+      {% if s.ik %}<span class="label">jij</span>{% endif %}
+    </li>
+    {% endfor %}
+    {% for naam_computer in w.computer_namen %}
+    <li class="computer"><span class="stoel-naam">{{ naam_computer }}</span><span class="label">computer</span></li>
+    {% endfor %}
+    {% for _ in range(w.plaatsen_over) %}
+    <li class="leeg"><span>vrije plaats</span></li>
+    {% endfor %}
+  </ol>
+
+  {% if w.ik_maker %}
+  <form method="post" action="{{ url_for('computers_kiezen') }}" class="computers-kiezen">
+    <label class="invoer kort">
+      <span>Computerspelers erbij <small>(niveau {{ w.niveau }})</small></span>
+      <select name="computers" data-direct>
+        {% for n in range(0, max_computers + 1) %}
+        <option value="{{ n }}" {% if n == spel.computers %}selected{% endif %}>{{ n }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <noscript><button class="knop klein secundair" type="submit">Opslaan</button></noscript>
+  </form>
+  <form method="post" action="{{ url_for('begin') }}">
+    <button class="knop groot" type="submit" {% if not w.kan_beginnen %}disabled{% endif %}>Kaarten delen</button>
+  </form>
+  {% if not w.kan_beginnen %}<p class="uitleg">Wacht op een medespeler, of zet er een computer bij.</p>{% endif %}
+  {% else %}
+  <p class="wachten"><span class="wacht-stip" aria-hidden="true"></span>Wachten tot {{ w.maker }} de kaarten deelt…</p>
+  {% endif %}
+
+  <details class="regels-overzicht">
+    <summary>Spelregels van dit spel ({{ w.startkaarten }} kaarten per speler)</summary>
+    <ul>{% for tekst in w.regels %}<li>{{ tekst }}</li>{% else %}<li>Geen pestkaarten: alleen kleur en waarde volgen.</li>{% endfor %}</ul>
+  </details>
+</section>
+
+{# Tandwiel in de kop (zie basis.html) #}
+<dialog id="spelmenu" class="venster menu">
+  <h3>Menu</h3>
+  <form method="post" action="{{ url_for('stoppen') }}">
+    <button class="knop" type="submit">Wachtkamer verlaten</button>
+  </form>
+  <form method="post" action="{{ url_for('afmelden') }}">
+    <button class="knop secundair" type="submit">Afmelden</button>
+  </form>
+  <button class="knop klein secundair" type="button" data-sluit>Sluiten</button>
+</dialog>
+{% endblock %}

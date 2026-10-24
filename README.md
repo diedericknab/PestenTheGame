@@ -9,8 +9,10 @@ staan het aantal startkaarten, de spelregels (welke pestkaarten meedoen) en de
 **assistent**: tips tijdens het spel, alleen op niveau makkelijk. Alles wordt bij je
 e-mailadres bewaard in een SQLite-database, samen met je gespeelde en gewonnen rondes.
 
-Spelvormen: nu **alleen tegen de computer**. **Doorgeven** (pass and play) en **online**
-(meerdere apparaten) komen later.
+Spelvormen: **alleen tegen de computer**, of **online**: iedereen op een eigen telefoon,
+tablet of computer, met een spelcode en een wachtkamer (maximaal 6 spelers, computers
+meegeteld). Online kan iedere speler de assistent voor zichzelf aanzetten, en met
+**beeld en geluid** (WebRTC, alleen via https) zien en horen de spelers elkaar.
 
 ## Starten in Jupyter
 Open `pesten_spel.ipynb` en voer de cellen van boven naar beneden uit. De testcellen
@@ -19,6 +21,7 @@ De laatste cel start de server: http://127.0.0.1:5000 (de database komt in `data
 
 ## Starten met Docker (https via Caddy)
     echo "SPEL_ADRES=192.168.1.50" > .env     # of een domeinnaam
+    echo "TOEGESTANE_EMAILS=anna@gmail.com, @familie.nl" >> .env   # wie mag spelen; leeg = iedereen
     docker compose up -d --build
 Daarna: https://<SPEL_ADRES>. Caddy regelt de certificaten (Let's Encrypt bij een domeinnaam,
 een eigen certificaat bij een IP-adres). Zie `instruction.md`, hoofdstuk 6.
@@ -29,3 +32,13 @@ Na een wijziging in het notebook, de templates of de CSS: opnieuw `docker compos
 ## Aanpassen
 - Spelregels, aantal strafkaarten, computerspelers, niveaus: sectie 2 van het notebook.
 - Kleuren: `static/kleuren.css`; `static/spel.css` bevat alleen de opmaak.
+- Beeld en geluid: `static/beeld.js`.
+
+## Naar de Raspberry Pi
+Deze map is de bron; pas op de Pi niets met de hand aan.
+- `.env.pi` bevat de instellingen van de Pi: `SPEL_ADRES` en `TOEGESTANE_EMAILS` (wie mag spelen).
+  Staat niet in git (e-mailadressen).
+- `./maak_zip.sh` maakt `pesten-spel-rpi.zip` met `.env.pi` als `.env`.
+- `./audit.sh` toont het auditlog van de Pi: mislukte en geweigerde aanmeldingen (`./audit.sh 30 alles`: alles van 30 dagen).
+- `./naar_pi.sh` zet deze versie op de Pi (`~/pesten`) en start het spel opnieuw. De database en
+  het certificaat blijven bewaard; lopende spellen zijn daarna weg.

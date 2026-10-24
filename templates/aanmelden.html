@@ -2,7 +2,8 @@
 {% block inhoud %}
 {# ---------- AANMELDEN EN INSTELLINGEN (scherm 1) ---------- #}
 <section class="paneel start">
-  <h2>Welkom bij Pesten</h2>
+  <p class="bovenschrift">Het kaartspel</p>
+  <h2>Welkom aan tafel</h2>
   <p class="uitleg">Vul je gegevens in en kies hoe je wilt spelen. Je instellingen worden bij je
     e-mailadres bewaard, zodat ze de volgende keer al klaarstaan.</p>
 
@@ -12,7 +13,7 @@
       <label class="invoer">
         <span>E-mailadres</span>
         <input type="email" name="email" value="{{ email_tekst }}" required maxlength="254"
-               autocomplete="email" inputmode="email" {% if not email_tekst %}autofocus{% endif %}>
+               autocomplete="email" inputmode="email" autocapitalize="off" {% if not email_tekst %}autofocus{% endif %}>
       </label>
       <label class="invoer">
         <span>Naam <small>(zien de andere spelers)</small></span>
@@ -29,22 +30,31 @@
       <legend>Spelvorm</legend>
       <div class="keuzes">
         {% for sleutel, tekst in spelvormen.items() %}
-        <label class="keuze {% if sleutel not in beschikbaar %}uit{% endif %}">
+        <label class="keuze">
           <input type="radio" name="spelvorm" value="{{ sleutel }}"
-                 {% if sleutel == instellingen.spelvorm %}checked{% endif %}
-                 {% if sleutel not in beschikbaar %}disabled{% endif %}>
+                 {% if sleutel == instellingen.spelvorm %}checked{% endif %}>
           <span>{{ tekst }}</span>
         </label>
         {% endfor %}
       </div>
+      {# Alleen bij online: meedoen met een code, of zelf een spel maken. #}
+      <div class="online-deel" data-alleen-online>
+        <label class="invoer kort">
+          <span>Spelcode <small>(leeg laten = zelf een spel maken)</small></span>
+          <input type="text" name="code" value="{{ code_tekst }}" maxlength="{{ code_lengte }}"
+                 class="code-invoer" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                 placeholder="bv. K7QMX">
+        </label>
+        <p class="uitleg" id="online-uitleg"></p>
+      </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset data-alleen-maken>
       <legend>Tegenstanders</legend>
       <label class="invoer kort">
         <span>Aantal computerspelers</span>
         <select name="computers">
-          {% for n in range(min_computers, max_computers + 1) %}
+          {% for n in range(0, max_computers + 1) %}
           <option value="{{ n }}" {% if n == instellingen.computers|int %}selected{% endif %}>{{ n }}</option>
           {% endfor %}
         </select>
@@ -60,7 +70,7 @@
     </fieldset>
 
     <div class="tandwiel-rij">
-      <button class="tandwiel" type="button" data-open="instellingen-venster" aria-label="Spelregels en assistent">⚙</button>
+      <button class="tandwiel" type="button" data-open="instellingen-venster" aria-label="Spelregels en assistent">{% include "tandwiel.svg" %}</button>
       <span>
         <b>Spelregels en assistent</b><br>
         <small class="uitleg" id="samenvatting"></small>
@@ -68,39 +78,42 @@
     </div>
 
     {# Achter het tandwiel. Het venster staat binnen het formulier, dus de velden gaan mee met Start spel. #}
-    <dialog id="instellingen-venster" class="venster donker">
-      <h3>⚙ Spelregels en assistent</h3>
-      <label class="invoer kort">
-        <span>Kaarten per speler bij de start</span>
-        <select name="startkaarten">
-          {% for n in range(min_startkaarten, max_startkaarten + 1) %}
-          <option value="{{ n }}" {% if n == instellingen.startkaarten|int %}selected{% endif %}>{{ n }}</option>
-          {% endfor %}
-        </select>
-      </label>
+    <dialog id="instellingen-venster" class="venster">
+      <h3>Spelregels en assistent</h3>
       <fieldset>
         <legend>Assistent</legend>
         <label class="keuze" id="assistent-keuze">
           <input type="checkbox" name="assistent" value="1" {% if instellingen.assistent %}checked{% endif %}>
           <span>Tips tijdens het spel: welke kaart je het best kunt leggen en waarom.
-            <small>Alleen op niveau {{ assistent_niveaus|join(", ") }}.</small></span>
+            <small>Tegen de computer alleen op niveau {{ assistent_niveaus|join(", ") }}. Online kan het altijd; alleen jij ziet je tips.</small></span>
         </label>
       </fieldset>
-      <fieldset>
-        <legend>Spelregels</legend>
-        <div class="keuzes regels">
-          {% for sleutel, tekst in regels.items() %}
-          <label class="keuze">
-            <input type="checkbox" name="regel" value="{{ sleutel }}" {% if instellingen.regels.get(sleutel) %}checked{% endif %}>
-            <span>{{ tekst }}</span>
-          </label>
-          {% endfor %}
-        </div>
-      </fieldset>
+      <div data-alleen-maken>
+        <label class="invoer kort">
+          <span>Kaarten per speler bij de start</span>
+          <select name="startkaarten">
+            {% for n in range(min_startkaarten, max_startkaarten + 1) %}
+            <option value="{{ n }}" {% if n == instellingen.startkaarten|int %}selected{% endif %}>{{ n }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <fieldset>
+          <legend>Spelregels</legend>
+          <div class="keuzes regels">
+            {% for sleutel, tekst in regels.items() %}
+            <label class="keuze">
+              <input type="checkbox" name="regel" value="{{ sleutel }}" {% if instellingen.regels.get(sleutel) %}checked{% endif %}>
+              <span>{{ tekst }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+      </div>
+      <p class="uitleg" data-alleen-meedoen>De spelregels kiest wie het spel heeft gemaakt.</p>
       <button class="knop" type="button" data-sluit>Klaar</button>
     </dialog>
 
-    <button class="knop groot" type="submit">Start spel</button>
+    <button class="knop groot" type="submit" id="startknop">Start spel</button>
   </form>
 </section>
 
@@ -109,12 +122,15 @@
     // Bekend e-mailadres: naam, instellingen en scores ophalen en invullen.
     const formulier = document.getElementById("startformulier");
     const email = formulier.elements.email;
+    const code = formulier.elements.code;
     const uitleg = document.getElementById("speler-uitleg");
     let laatsteEmail = email.value.trim().toLowerCase();
     let wachten;
 
     function invullen(instellingen) {
       for (const veld of formulier.querySelectorAll("[name=spelvorm], [name=niveau]")) {
+        // Met een spelcode (uit een link) blijft de spelvorm online.
+        if (veld.name === "spelvorm" && code.value.trim()) continue;
         veld.checked = veld.value === instellingen[veld.name];
       }
       formulier.elements.computers.value = instellingen.computers;
@@ -126,21 +142,41 @@
       bijwerken();
     }
 
-    // Wat er achter het tandwiel staat, in één regel. De assistent kan alleen op
-    // bepaalde niveaus.
+    // Wat er bij de gekozen spelvorm hoort, en wat er achter het tandwiel staat in één regel.
+    // De assistent kan tegen de computer alleen op bepaalde niveaus; online altijd.
     const assistentNiveaus = {{ assistent_niveaus|list|tojson }};
     function bijwerken() {
+      const online = formulier.querySelector("[name=spelvorm]:checked")?.value === "online";
+      const meedoen = online && code.value.trim() !== "";
+      for (const deel of document.querySelectorAll("[data-alleen-online]")) deel.hidden = !online;
+      for (const deel of document.querySelectorAll("[data-alleen-maken]")) deel.hidden = meedoen;
+      for (const deel of document.querySelectorAll("[data-alleen-meedoen]")) deel.hidden = !meedoen;
+
+      // Tegen de computer minstens één computer; online mag het ook nul zijn.
+      const geen = formulier.elements.computers.querySelector("option[value='0']");
+      geen.disabled = !online;
+      if (!online && formulier.elements.computers.value === "0") formulier.elements.computers.value = "1";
+
+      document.getElementById("online-uitleg").textContent = meedoen
+        ? "Je doet mee met het spel van iemand anders. Die kiest de spelregels."
+        : "Je krijgt een spelcode en een link om te delen. Maximaal {{ max_spelers }} spelers, computers meegeteld.";
+      document.getElementById("startknop").textContent = meedoen ? "Doe mee" : online ? "Maak het spel" : "Start spel";
+
       const niveau = formulier.querySelector("[name=niveau]:checked");
-      const mogelijk = niveau && assistentNiveaus.includes(niveau.value);
+      const mogelijk = online || (niveau && assistentNiveaus.includes(niveau.value));
       document.getElementById("assistent-keuze").classList.toggle("uit", !mogelijk);
       const regels = formulier.querySelectorAll("[name=regel]");
       const aan = [...regels].filter(r => r.checked).length;
       const assistent = mogelijk ? (formulier.elements.assistent.checked ? "assistent aan" : "assistent uit")
                                  : "geen assistent op dit niveau";
-      document.getElementById("samenvatting").textContent =
+      document.getElementById("samenvatting").textContent = meedoen ? assistent :
         `${formulier.elements.startkaarten.value} kaarten · ${aan} van ${regels.length} regels aan · ${assistent}`;
     }
     formulier.addEventListener("change", bijwerken);
+    code.addEventListener("input", function () {
+      code.value = code.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      bijwerken();
+    });
     bijwerken();
 
     async function ophalen() {
@@ -157,6 +193,8 @@
           formulier.elements.naam.value = gegevens.naam;
           invullen(gegevens.instellingen);
           uitleg.textContent = `Welkom terug! Gespeeld: ${gegevens.gespeeld} rondes, gewonnen: ${gegevens.gewonnen}. Je instellingen staan klaar.`;
+        } else if (gegevens.geen_toegang) {
+          uitleg.textContent = "Dit e-mailadres heeft geen toegang tot dit spel. Vraag de beheerder om je toe te voegen.";
         } else {
           uitleg.textContent = "Nieuw e-mailadres: vul je naam in en kies je instellingen.";
         }
@@ -169,6 +207,19 @@
       wachten = setTimeout(ophalen, 500);
     });
     email.addEventListener("change", ophalen);
+
+    // Dit apparaat onthoudt het laatste e-mailadres; naam en instellingen komen dan uit de database.
+    try {
+      if (!email.value) {
+        email.value = localStorage.getItem("pesten-email") || "";
+        ophalen();
+      }
+      formulier.addEventListener("submit", function () {
+        localStorage.setItem("pesten-email", email.value.trim().toLowerCase());
+      });
+    } catch (fout) {
+      // Privévenster of geblokkeerde opslag: dan gewoon zelf invullen.
+    }
   })();
 </script>
 {% endblock %}

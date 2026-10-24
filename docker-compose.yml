@@ -13,6 +13,9 @@ services:
     # Geen "ports": het spel is alleen via Caddy (https) bereikbaar.
     environment:
       SPEL_HTTPS: "1"
+      TZ: Europe/Amsterdam       # tijden in het auditlog in Nederlandse tijd
+      # Wie mag spelen (uit .env); leeg = iedereen.
+      TOEGESTANE_EMAILS: ${TOEGESTANE_EMAILS:-}
     volumes:
       # De database (spelers, instellingen en scores).
       - database:/app/database

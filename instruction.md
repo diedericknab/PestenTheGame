@@ -19,7 +19,7 @@ rechtstreeks bereikbaar.
 
 - Een Raspberry Pi met een 64-bit OS (Raspberry Pi OS 64-bit) of 32-bit OS.
 - Docker met `docker compose` op de Pi.
-- De map van het spel (bijvoorbeeld als zip: `pesten-spel.zip`).
+- Het bestand `pesten-spel-rpi.zip`.
 - Poort 80 en 443 vrij op de Pi (er mag geen andere webserver op draaien).
 - Een adres voor het spel: een domeinnaam (bijvoorbeeld `spel.jouwdomein.nl`) of het
   IP-adres van de Pi. Zie hoofdstuk 6 voor het verschil.
@@ -58,22 +58,30 @@ Geeft `docker compose version` een fout, installeer dan de compose-plugin:
 
 ## 2. Installeren en starten
 
-1. Kopieer de map van het spel naar de Pi (bijvoorbeeld als zip met een USB-stick of `scp`)
-   en ga naar de map:
+1. Kopieer `pesten-spel-rpi.zip` naar de Pi (bijvoorbeeld met een USB-stick of `scp`),
+   pak hem uit en ga naar de map:
 
    ```
-   unzip pesten-spel.zip -d pesten
+   unzip pesten-spel-rpi.zip -d pesten
    cd pesten
    ```
 
-2. Maak het bestand `.env` in deze map (met `nano .env`):
+2. Controleer het bestand `.env` in deze map (het staat in de zip; met `ls -a` zie je het),
+   met `nano .env`:
 
    ```
    SPEL_ADRES=192.168.178.200
+   TOEGESTANE_EMAILS=anna@gmail.com, bas@hotmail.com, @familie.nl
    ```
 
    `SPEL_ADRES` is het IP-adres van deze machine (dat vind je met `hostname -I`) of een
-   domeinnaam. Opslaan in nano: Ctrl+O, Enter, Ctrl+X.
+   domeinnaam. `TOEGESTANE_EMAILS` zijn de e-mailadressen die mogen spelen, gescheiden door
+   komma's; met `@familie.nl` mag iedereen met een adres op dat domein. Laat je het leeg,
+   dan mag iedereen spelen. Opslaan in nano: Ctrl+O, Enter, Ctrl+X.
+
+   Draait het kofferspel (of een ander spel met Caddy) al op deze Pi, dan zijn poort 80 en
+   443 bezet. Stop dat spel eerst in zijn eigen map met `docker compose down`, of zet de
+   spellen op verschillende machines.
 
 3. Bouw en start alles (de eerste keer duurt dit een paar minuten):
 
@@ -95,12 +103,15 @@ Pak de nieuwe versie uit over de bestaande map (je `.env` blijft staan) en bouw 
 De database (een Docker-volume) blijft bewaard:
 
 ```
-unzip -o pesten-spel.zip -d pesten -x .env
+unzip -o pesten-spel-rpi.zip -d pesten -x .env
 cd pesten
 docker compose up -d --build
 ```
 
 Lopende spellen zijn daarna weg; de database blijft.
+
+Vanaf de computer met de bronmap gaat dit in één keer met `./naar_pi.sh` (via ssh). De
+instellingen van de Pi staan dan in `.env.pi` in de bronmap; wijzig ze daar, niet op de Pi.
 
 ---
 
@@ -110,9 +121,14 @@ Lopende spellen zijn daarna weg; de database blijft.
 1. Vul je **e-mailadres** en je **naam** in (die zien de andere spelers). Ben je al eerder
    aangemeld, dan komen je naam en instellingen vanzelf terug zodra je je e-mailadres hebt
    ingevuld, met hoeveel rondes je hebt gespeeld en gewonnen.
-2. Kies de **spelvorm**. Nu kan alleen **Alleen tegen de computer**; doorgeven op één
-   apparaat en online spelen komen later.
-3. Kies het aantal **computerspelers** (1 tot 5) en het **niveau**:
+2. Kies de **spelvorm**:
+   - **Alleen tegen de computer**.
+   - **Online**: iedereen speelt op een eigen telefoon, tablet of computer (zie *Online spelen*
+     hieronder). Laat de **spelcode** leeg om zelf een spel te maken, of vul de code van een
+     ander in om mee te doen.
+
+   Doorgeven op één apparaat zit er bewust niet in: dan zie je elkaars kaarten.
+3. Kies het aantal **computerspelers** (tegen de computer 1 tot 5, online 0 tot 5) en het **niveau**:
 
    | Niveau | Hoe de computers spelen |
    | ------ | ----------------------- |
@@ -123,12 +139,47 @@ Lopende spellen zijn daarna weg; de database blijft.
 4. Klik op het **tandwiel (⚙)** voor de rest: het aantal kaarten bij de start (5 tot 10), de
    **assistent** en de **spelregels**. Onder het tandwiel zie je in één regel wat er
    ingesteld is.
-5. Klik op **Start spel**. Alles wordt bij je e-mailadres bewaard.
+5. Klik op **Start spel** (online: **Maak het spel** of **Doe mee**). Je naam en alle
+   instellingen worden bij je e-mailadres in de database bewaard. Elk apparaat onthoudt
+   bovendien het laatste e-mailadres, zodat je de volgende keer meteen klaarstaat.
+
+### Online spelen
+1. Eén speler kiest **Online**, laat de spelcode leeg en klikt **Maak het spel**. Die komt in
+   de **wachtkamer** met een spelcode van 5 tekens (bijvoorbeeld `K7QMX`) en de knop
+   **Link delen** (op een iPhone opent dan het deelmenu, bijvoorbeeld voor WhatsApp).
+2. De anderen openen de link, of kiezen zelf **Online** en vullen de code in, en klikken
+   **Doe mee**. In de wachtkamer zie je wie er al aan tafel zit.
+3. Wie het spel maakte, kiest hoeveel **computers** er meespelen en klikt **Kaarten delen**.
+   Er kunnen maximaal **6 spelers** aan tafel, mensen en computers samen. Met veel spelers
+   krijgt iedereen zo nodig wat minder startkaarten, zodat het in één pak past.
+4. Iedereen ziet alleen zijn eigen kaarten. De pagina ververst vanzelf als een ander een
+   zet doet. Elke speler kan de **assistent** voor zichzelf aanzetten (achter het tandwiel),
+   handig voor beginners; de tips ziet alleen die speler.
+5. Ga je weg (**Spel verlaten** achter het tandwiel), dan speelt een computer verder met je
+   kaarten. Meedoen kan alleen zolang het spel in de wachtkamer staat; ben je per ongeluk
+   weg, doe dan met hetzelfde e-mailadres opnieuw mee en je krijgt je plaats terug.
+
+### Beeld en geluid
+In een online spel staat bovenaan **Camera en microfoon aan**. Wie dat aanzet, ziet en hoort
+iedereen die het ook aan heeft. Daarna kun je de microfoon of camera even uitzetten, of
+**Ophangen**. Op een iPhone of iPad vraagt Safari eerst om toestemming.
+
+- Het beeld en geluid gaan rechtstreeks tussen de apparaten (WebRTC), niet via de Pi. Om
+  elkaar via internet te vinden, gebruiken de browsers een openbare STUN-server van Google;
+  daar gaat alleen het adres langs, geen beeld of geluid.
+- Het werkt alleen via **https met een vertrouwd certificaat** (hoofdstuk 6). Met een
+  IP-adres moet op elke iPhone het hoofdcertificaat van Caddy geïnstalleerd zijn.
+- Zit je in dezelfde kamer, gebruik dan oortjes of zet de microfoon uit: anders hoor je een
+  echo of piept het.
+- Elke speler heeft een verbinding met elke andere speler. Met 6 mensen is dat best veel
+  voor een oudere telefoon; het beeld is daarom klein (320×240).
+- In sommige netwerken (strenge firewalls, sommige mobiele netwerken) lukt een rechtstreekse
+  verbinding niet. Daarvoor is een TURN-server nodig; die zit er (nog) niet in.
 
 ### Scherm 2: het spel
-- Bovenaan zitten de computerspelers (met hun aantal kaarten), in het midden de
+- Bovenaan zitten de andere spelers (met hun aantal kaarten), in het midden de
   **trekstapel** en de **open stapel**, onderaan jouw hand.
-- Ben je aan de beurt, dan lichten de kaarten op die je mag leggen. Klik op een kaart om hem
+- Ben je aan de beurt, dan komen de kaarten die je mag leggen omhoog, met een rode rand. Klik op een kaart om hem
   te leggen. Bij een **boer** kies je daarna een kleur.
 - Kun of wil je niets leggen, klik dan op de trekstapel (**Pak**). Past de gepakte kaart,
   dan mag je hem leggen of op **Pas** klikken. Past hij niet, dan ben je klaar.
@@ -142,8 +193,8 @@ Lopende spellen zijn daarna weg; de database blijft.
   kaarten van de anderen bekijken. **Volgende ronde** deelt opnieuw; elke ronde begint de
   volgende speler.
 
-Rechtsboven staat het **tandwiel (⚙)**: assistent aan/uit (alleen op makkelijk),
-**Nieuw spel / instellingen** en **Afmelden**.
+Rechtsboven staat het **tandwiel (⚙)**: assistent aan/uit (tegen de computer alleen op
+makkelijk, online altijd), **Nieuw spel / instellingen** (online: **Spel verlaten**) en **Afmelden**.
 
 ### De spelregels
 
@@ -166,12 +217,14 @@ De eerste open kaart is altijd een gewone kaart. Is de trekstapel op, dan worden
 kaarten (behalve de bovenste) geschud en de nieuwe trekstapel.
 
 ### De assistent
-Speel je op niveau **makkelijk** en staat de assistent aan, dan staat er tijdens je beurt een
-tip boven je hand: welke kaart je het best kunt leggen en waarom. Die kaart licht groen op.
+Speel je tegen de computer op niveau **makkelijk**, of speel je online, en staat de assistent
+aan, dan staat er tijdens je beurt een tip boven je hand: welke kaart je het best kunt leggen
+en waarom. Die kaart krijgt een blauwe rand met "tip".
 Bij een boer licht ook de aangeraden kleur op, en met nog twee kaarten herinnert de
 assistent je aan **Laatste kaart!**. De assistent denkt zoals de computer op niveau moeilijk.
 
-Op normaal en moeilijk is er geen assistent. Je keuze blijft wel bewaard: kies je later weer
+De assistent is gewoon rekenwerk in het notebook (geen AI-dienst, geen internet nodig).
+Tegen de computer is er op normaal en moeilijk geen assistent. Je keuze blijft wel bewaard: kies je later weer
 makkelijk, dan staat hij weer zoals je hem had.
 
 Let op: er is geen wachtwoord. Wie een e-mailadres invult, ziet de naam, instellingen en
@@ -310,10 +363,46 @@ ooit over http draaide: mobiele browsers gaven dan bij elk formulier de melding 
 Het zorgt er nu ook voor dat de tafel niet knippert bij elke zet: alleen de inhoud van de
 pagina wordt vervangen. Is er een computer aan de beurt, dan vraagt hetzelfde script na een
 korte pauze om zijn zet (`COMPUTER_PAUZE_MS`); staat er een venster open (⚙), dan wacht het.
+Online vraagt het script bovendien elke anderhalve seconde (`VERVERS_MS`) of er iets
+veranderd is, en het blok met beeld en geluid blijft staan als de pagina ververst.
+
+### Wie mag spelen
+Met `TOEGESTANE_EMAILS` in `.env` bepaal je wie mag spelen (zie hoofdstuk 2). Andere adressen
+krijgen de melding dat ze geen toegang hebben, en zien ook geen namen of scores. Iemand
+toevoegen of weghalen:
+
+```
+nano .env                 # pas TOEGESTANE_EMAILS aan
+docker compose up -d      # de spelcontainer start opnieuw met de nieuwe lijst
+```
+
+Lopende spellen zijn daarna weg. Wie van de lijst is gehaald, wordt bij de volgende klik afgemeld.
+
+### Auditlog: wie probeerde er binnen te komen?
+Elke aanmelding en elke mislukte poging staat in het auditlog (in de database, 90 dagen
+bewaard): tijd, e-mailadres, IP-adres en browser. Bekijken vanaf de computer met de bronmap:
+
+```
+./audit.sh            # mislukte pogingen van de laatste 7 dagen
+./audit.sh 30         # van de laatste 30 dagen
+./audit.sh 7 alles    # ook alle geslaagde aanmeldingen
+```
+
+Onderaan staat per IP-adres hoe vaak het mislukte. Op de Pi zelf zie je de regels ook met
+`docker logs pesten-spel | grep Audit`.
+
+| Soort | Betekenis |
+| ----- | --------- |
+| `geweigerd` | Aanmelden met een adres dat niet in `TOEGESTANE_EMAILS` staat |
+| `opzoeken_geweigerd` | Zo'n adres is ingevuld, maar nog niet op Start geklikt |
+| `ongeldig_adres` | Iets ingevuld wat geen e-mailadres is |
+| `onbekende_code` | Meedoen met een spelcode die niet bestaat (veel hiervan: iemand raadt codes) |
+| `toegang_ingetrokken` | Iemand die van de lijst is gehaald, is afgemeld |
+| `aangemeld`, `afgemeld` | Gewone aanmeldingen (alleen met `alles`) |
 
 ### Wat nog niet beveiligd is
-Er is geen wachtwoord: het e-mailadres wordt niet gecontroleerd. Iedereen die het spel kan
-openen en een e-mailadres kent, ziet de naam, instellingen en scores die daarbij horen.
+Er is geen wachtwoord: het spel controleert niet of een e-mailadres echt van jou is. Wie een
+toegestaan adres kent, kan daarmee spelen en ziet de naam, instellingen en scores die daarbij horen.
 
 ---
 
@@ -327,9 +416,15 @@ openen en een e-mailadres kent, ziet de naam, instellingen en scores die daarbij
 | Geen verbinding via `https://<ip>` | Controleer of `SPEL_ADRES` in `.env` precies het adres is dat je in de browser typt. Na een wijziging: `docker compose up -d`. |
 | Na **Start spel** steeds terug op het eerste scherm | Je opent het spel via `http://` zonder Caddy (het cookie werkt alleen over https). Gebruik `https://<SPEL_ADRES>`. |
 | Melding "Te veel kaarten" | Met veel tegenstanders en veel startkaarten past het niet in één pak. Kies minder tegenstanders of minder startkaarten (achter het tandwiel). |
+| Melding "heeft geen toegang tot dit spel" | Het adres staat niet in `TOEGESTANE_EMAILS` in `.env`. Voeg het toe en start opnieuw met `docker compose up -d` (hoofdstuk 6). |
 | Melding "is geen geldig e-mailadres" | Controleer het e-mailadres (bijvoorbeeld een spatie of een ontbrekende `@`). |
 | Een kaart licht niet op | Die kaart past niet. Klik je er toch op (zonder JavaScript), dan zegt de melding waarom. |
 | De computers doen niets | JavaScript staat uit of de verbinding is weg; ververs de pagina. Staat er een venster open (⚙ of kleur kiezen), dan wachten de computers tot je het sluit. |
-| Geen assistent te zien | De assistent is er alleen op niveau makkelijk en alleen als je aan de beurt bent. Zet hem aan achter het tandwiel. |
+| Geen assistent te zien | Tegen de computer is de assistent er alleen op niveau makkelijk; online altijd. Je ziet hem alleen als je aan de beurt bent. Zet hem aan achter het tandwiel. |
+| "Er is geen spel met de code ..." | Controleer de code. Na een herstart van de server zijn alle lopende spellen weg: maak een nieuw spel. |
+| "Dit spel is al begonnen" | Meedoen kan alleen in de wachtkamer. Wie al meedeed, komt met hetzelfde e-mailadres wel terug op zijn plaats. |
+| Camera: "werken alleen via https" | Open het spel via `https://` met een vertrouwd certificaat (hoofdstuk 6). Op een iPhone met een IP-adres: installeer het hoofdcertificaat van Caddy. |
+| Camera: "Geen toegang tot camera of microfoon" | iPhone: Instellingen → Safari → Camera en Microfoon → Vraag of Sta toe. Ververs daarna de pagina. |
+| Je ziet jezelf wel, de ander niet | Wacht een paar seconden. Lukt het niet: het netwerk laat geen rechtstreekse verbinding toe (zie *Beeld en geluid*); probeer wifi in plaats van mobiel internet. |
 | `exec format error` in het logboek | De image is op een andere computer gebouwd. Bouw hem op de Pi zelf (hoofdstuk 2). |
 | Wijziging in kleuren of notebook niet zichtbaar | Bouw de image opnieuw (hoofdstuk 5) en ververs de pagina met Ctrl+F5. |
