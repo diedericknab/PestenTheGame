@@ -162,14 +162,19 @@ instellingen van de Pi staan dan in `.env.pi` in de bronmap; wijzig ze daar, nie
    weg, doe dan met hetzelfde e-mailadres opnieuw mee en je krijgt je plaats terug.
 
 ### Beeld en geluid
-In een online spel staat rechtsboven op je eigen vak (bij je kaarten) de ronde knop **Bellen**. Wie daarop drukt, ziet
-en hoort iedereen die ook belt. Het camerabeeld komt in de **cirkel** van die speler, in plaats
-van de avatar. Tijdens het gesprek staan er drie knoppen: **Microfoon** en **Camera** (even uit
-en weer aan; uit is doorgestreept) en **Ophangen**. Bij **Bellen** verschijnt altijd eerst een
-venster: je browser vraagt zo om toestemming voor camera en microfoon, kies dan **Toestaan**.
+In een online spel zie en hoor je iedereen die belt, ook als je zelf niet belt: zijn
+camerabeeld staat in zijn **cirkel**, in plaats van de avatar. Rechtsboven op je eigen vak (bij
+je kaarten) staat de ronde knop **Bellen**: daarmee zet je je eigen camera en microfoon aan, zodat
+de anderen jou ook zien en horen. Tijdens het bellen staan er drie knoppen: **Microfoon** en
+**Camera** (even uit en weer aan; uit is doorgestreept) en **Ophangen**. Ophangen zet alleen je
+eigen camera en microfoon uit; je blijft de anderen zien en horen. De eerste keer dat je in een spel op
+**Bellen** drukt, verschijnt een venster: "Dit spel gaat nu je camera en microfoon gebruiken."
+Kies **Verder**; vraagt de browser om toestemming, kies dan **Toestaan**. Daarna belt Bellen meteen.
 Lukt het niet, dan zegt hetzelfde venster wat er mis is (geblokkeerd, geen camera, of de camera
 is in gebruik door een ander programma) en wat je kunt doen.
 
+- Hoor je de anderen niet? Tik één keer op de pagina: browsers (vooral op de iPhone) spelen
+  geluid pas af als je de pagina hebt aangeraakt.
 - Het beeld en geluid gaan rechtstreeks tussen de apparaten (WebRTC), niet via de Pi. Om
   elkaar via internet te vinden, gebruiken de browsers een openbare STUN-server van Google;
   daar gaat alleen het adres langs, geen beeld of geluid.

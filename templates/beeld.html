@@ -2,11 +2,11 @@
    Ophangen. De beelden zelf komen in de cirkels van de spelerskaarten (tafelkaarten.html).
    Dit blok blijft staan als de pagina ververst (zie toon() in basis.html), zodat het gesprek
    doorloopt; in .voorraad wachten de beelden even tijdens het verversen.
-   Het venster #bel-venster verschijnt altijd bij Bellen: eerst de uitleg over de toestemming,
+   Het venster #bel-venster: de eerste keer bellen in een spel de uitleg over de toestemming,
    en als het niet lukt wat er mis is en wat je kunt doen (zie static/beeld.js). #}
 {% from "iconen.html" import icoon %}
 {% if spel and spel.online %}
-<section id="beeld" class="beeld" data-ververs="{{ beeld_ververs_ms }}" aria-label="Beeld en geluid">
+<section id="beeld" class="beeld" data-ververs="{{ beeld_ververs_ms }}" data-spel="{{ spel.code }}" aria-label="Beeld en geluid">
   <div class="beeld-knoppen">
     <button class="rond-knop" type="button" data-beeld="aan">{{ icoon("microfoon") }}<span>Bellen</span></button>
     <button class="rond-knop" type="button" data-beeld="microfoon" hidden aria-label="Microfoon aan of uit">

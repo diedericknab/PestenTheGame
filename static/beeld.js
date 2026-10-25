@@ -2,10 +2,16 @@
 //
 // Het beeld en geluid gaan rechtstreeks van apparaat naar apparaat (WebRTC).
 // De server brengt alleen de berichten over waarmee twee apparaten een
-// verbinding afspreken (/beeld/...). Iedereen met de camera aan heeft een
-// verbinding met iedereen die ook de camera aan heeft. Van elk tweetal belt
-// degene met de laagste id; de ander neemt op. Zo bellen ze elkaar nooit
-// tegelijk.
+// verbinding afspreken (/beeld/...). Iedereen die het online spel open heeft, heeft
+// een verbinding met iedereen: zo zie en hoor je wie er belt, ook als je zelf niet
+// belt. Van elk tweetal maakt degene met de laagste id de verbinding; de ander
+// neemt op. Zo doen ze het nooit tegelijk.
+//
+// Elke verbinding heeft een plek voor geluid en een voor beeld. Bellen zet je eigen
+// camera en microfoon op die plekken (replaceTrack), Ophangen haalt ze er weer af.
+// De verbindingen met de anderen blijven dus staan: na Ophangen zie en hoor je de
+// anderen nog. Wie belt, weet de server ("belt"); alleen van hen staat het beeld in
+// de cirkel, bij de anderen de avatar.
 //
 // Elk beeld komt in de spelerskaart van die speler (.speler-kaart met dezelfde data-id,
 // zie tafelkaarten.html; je eigen kaart heeft data-id "ik"). Het blok #beeld met de
@@ -24,18 +30,19 @@
   const knoppen = {};
   for (const knop of blok.querySelectorAll("[data-beeld]")) knoppen[knop.dataset.beeld] = knop;
 
-  let stroom = null;          // je eigen camera en microfoon
+  let stroom = null;          // je eigen camera en microfoon (alleen als je belt)
   let ik = null;              // je id in het gesprek
   let timer = null;
   let ophalenBezig = false;
-  const verbindingen = new Map();   // id -> { pc, sinds }
+  const verbindingen = new Map();   // id -> { pc, sinds, binnen: MediaStream van de ander }
   const videos = new Map();         // id -> <video> ("ik" = je eigen beeld)
+  let bellers = new Set();          // wie er (volgens de server) belt
 
   // Het venster bij Bellen: eerst de uitleg over de toestemming, bij een probleem wat er mis
   // is en wat je kunt doen. [titel, tekst, tekst op de knop (geen knop: alleen Sluiten)]
   const TEKSTEN = {
-    vraag: ["Bellen", "Je browser vraagt zo of dit spel je camera en microfoon mag gebruiken. " +
-      "Kies dan Toestaan. Daarna zien en horen de anderen je, in je eigen cirkel.", "Verder"],
+    vraag: ["Bellen", "Dit spel gaat nu je camera en microfoon gebruiken. Mocht dit niet werken, " +
+      "dan zul je hiervoor toestemming moeten geven in de browser.", "Verder"],
     geblokkeerd: ["Camera en microfoon geblokkeerd", "Je browser blokkeert de camera en microfoon " +
       "voor dit spel, daarom komt er geen vraag om toestemming. Klik in de adresbalk op het slotje " +
       "(of het camera-icoon), zet Camera en Microfoon op Toestaan en ververs de pagina. Op een " +
@@ -109,10 +116,29 @@
     if (video) { video.srcObject = null; video.remove(); videos.delete(id); }
   }
 
+  // Wie belt, krijgt zijn beeld in de cirkel; wie niet belt, zijn avatar.
+  function beeldenBijwerken() {
+    for (const [id, v] of verbindingen) {
+      if (bellers.has(id)) toon(id, v.binnen, false);
+      else haalWeg(id);
+    }
+    if (stroom) toon("ik", stroom, true);
+    else haalWeg("ik");
+  }
+
   function weg(id) {
     const v = verbindingen.get(id);
     if (v) { v.pc.close(); verbindingen.delete(id); }
     haalWeg(id);
+  }
+
+  // Je eigen camera en microfoon op de plekken van een verbinding zetten (of eraf: null).
+  function sporenZetten(pc) {
+    for (const t of pc.getTransceivers()) {
+      const soort = t.receiver.track.kind;
+      const spoor = stroom ? (soort === "audio" ? stroom.getAudioTracks()[0] : stroom.getVideoTracks()[0]) : null;
+      t.sender.replaceTrack(spoor || null).catch(() => {});
+    }
   }
 
   // Wachten tot de browser al zijn adressen weet; dan gaat alles in één bericht.
@@ -126,31 +152,37 @@
     });
   }
 
-  function maakVerbinding(id, naam) {
+  function maakVerbinding(id) {
     weg(id);
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    verbindingen.set(id, { pc: pc, sinds: Date.now() });
-    for (const spoor of stroom.getTracks()) pc.addTrack(spoor, stroom);
-    pc.ontrack = function (e) { toon(id, e.streams[0], false); };
+    const binnen = new MediaStream();
+    verbindingen.set(id, { pc: pc, sinds: Date.now(), binnen: binnen });
+    pc.ontrack = function (e) { binnen.addTrack(e.track); beeldenBijwerken(); };
     pc.onconnectionstatechange = function () {
       if (pc.connectionState === "failed") weg(id);   // de volgende ronde opnieuw
     };
     return pc;
   }
 
-  async function bel(id, naam) {
-    const pc = maakVerbinding(id, naam);
+  async function verbind(id) {
+    const pc = maakVerbinding(id);
+    pc.addTransceiver("audio", { direction: "sendrecv" });
+    pc.addTransceiver("video", { direction: "sendrecv" });
+    sporenZetten(pc);
     await pc.setLocalDescription(await pc.createOffer());
     await adressenKlaar(pc);
     if (verbindingen.get(id)?.pc !== pc) return;
     await post("stuur", { aan: id, bericht: JSON.stringify({ soort: "voorstel", sdp: pc.localDescription.sdp }) });
   }
 
-  async function verwerk(bericht, namen) {
+  async function verwerk(bericht) {
     const id = bericht.van;
     if (bericht.soort === "voorstel") {
-      const pc = maakVerbinding(id, namen.get(id) || "");
+      const pc = maakVerbinding(id);
       await pc.setRemoteDescription({ type: "offer", sdp: bericht.sdp });
+      // Ook zelf kunnen sturen, zodat Bellen later zonder nieuwe afspraak werkt.
+      for (const t of pc.getTransceivers()) t.direction = "sendrecv";
+      sporenZetten(pc);
       await pc.setLocalDescription(await pc.createAnswer());
       await adressenKlaar(pc);
       if (verbindingen.get(id)?.pc !== pc) return;
@@ -163,26 +195,28 @@
     }
   }
 
-  // Elke seconde: berichten ophalen, nieuwe deelnemers bellen, vertrokken deelnemers weghalen.
+  // Elke seconde: berichten ophalen, nieuwe deelnemers verbinden, vertrokken deelnemers weghalen.
   async function ophalen() {
-    if (ophalenBezig || !stroom) return;
+    if (ophalenBezig) return;
     ophalenBezig = true;
     try {
       const antwoord = await post("post");
-      if (!antwoord.ik) {   // de server kent ons niet meer (bv. na een herstart): opnieuw aanmelden
-        await post("aan");
+      if (!antwoord.ik) {   // de server kent ons (nog) niet, bv. na een herstart: aanmelden
+        await post("aan", { belt: stroom ? "1" : "0" });
         return;
       }
       ik = antwoord.ik;
-      const namen = new Map(antwoord.deelnemers.map(d => [d.id, d.naam]));
-      for (const bericht of antwoord.berichten) await verwerk(bericht, namen);
-      for (const [id, naam] of namen) {
+      const ids = new Set(antwoord.deelnemers.map(d => d.id));
+      bellers = new Set(antwoord.deelnemers.filter(d => d.belt).map(d => d.id));
+      for (const bericht of antwoord.berichten) await verwerk(bericht);
+      for (const id of ids) {
         if (id === ik) continue;
         const v = verbindingen.get(id);
         if (v && v.pc.connectionState !== "connected" && Date.now() - v.sinds > OPGEVEN_NA_MS) weg(id);
-        if (!verbindingen.has(id) && ik < id) bel(id, naam);
+        if (!verbindingen.has(id) && ik < id) verbind(id);
       }
-      for (const id of [...verbindingen.keys()]) if (!namen.has(id)) weg(id);
+      for (const id of [...verbindingen.keys()]) if (!ids.has(id)) weg(id);
+      beeldenBijwerken();
     } catch (fout) {
       // Even geen verbinding met de server: de volgende keer opnieuw.
     } finally {
@@ -194,6 +228,7 @@
     const aan = Boolean(stroom);
     knoppen.aan.hidden = aan;
     knoppen.microfoon.hidden = knoppen.camera.hidden = knoppen.uit.hidden = !aan;
+    blok.classList.toggle("actief", aan);
     if (!aan) return;
     const geluid = stroom.getAudioTracks()[0], beeld = stroom.getVideoTracks()[0];
     // Staat de microfoon of camera even uit, dan krijgt de knop de klasse "uit" (doorgestreept icoon).
@@ -201,18 +236,27 @@
     knoppen.camera.classList.toggle("uit", !(beeld && beeld.enabled));
     knoppen.microfoon.setAttribute("aria-pressed", String(Boolean(geluid && geluid.enabled)));
     knoppen.camera.setAttribute("aria-pressed", String(Boolean(beeld && beeld.enabled)));
-    blok.classList.toggle("actief", aan);
   }
 
-  // Bellen: altijd eerst het venster met uitleg; met Verder vraagt de browser om toestemming.
+  // De uitleg bij Bellen komt alleen de eerste keer in dit spel (onthouden per tabblad).
+  const UITLEG_GEZIEN = "pesten-bel-uitleg-" + blok.dataset.spel;
+  function uitlegGezien() {
+    try { return sessionStorage.getItem(UITLEG_GEZIEN) === "1"; } catch (fout) { return false; }
+  }
+
+  // Bellen: de eerste keer in dit spel eerst het venster met uitleg (met Verder vraagt de
+  // browser om toestemming); daarna meteen. Foutmeldingen komen altijd.
   async function bellen() {
     if (!navigator.mediaDevices || !window.RTCPeerConnection) toonVenster("https");
     else if (await geblokkeerd()) toonVenster("geblokkeerd");
-    else toonVenster("vraag");
+    else if (!uitlegGezien()) toonVenster("vraag");
+    else aan();
   }
 
+  // Je eigen camera en microfoon aan, en op alle verbindingen zetten.
   async function aan() {
     venster.close();
+    try { sessionStorage.setItem(UITLEG_GEZIEN, "1"); } catch (fout) { /* privévenster: dan elke keer */ }
     try {
       stroom = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } },
@@ -224,25 +268,32 @@
       toonVenster(soort || "anders", soort ? "" : fout.name);
       return;
     }
-    toon("ik", stroom, true);
+    for (const v of verbindingen.values()) sporenZetten(v.pc);
+    beeldenBijwerken();
     knoppenBijwerken();
-    await post("aan");
-    ophalen();
-    timer = setInterval(ophalen, Number(blok.dataset.ververs) || 1000);
+    post("aan", { belt: "1" }).catch(() => {});
   }
 
-  function uit(stil) {
-    clearInterval(timer);
-    for (const id of [...verbindingen.keys()]) weg(id);
-    if (stroom) {
-      for (const spoor of stroom.getTracks()) spoor.stop();
-      if (!stil) post("uit").catch(() => {});
-      else navigator.sendBeacon("/beeld/uit");
-    }
+  // Ophangen: alleen je eigen camera en microfoon uit. De verbindingen blijven staan,
+  // dus je blijft de anderen zien en horen.
+  function ophangen() {
+    if (stroom) for (const spoor of stroom.getTracks()) spoor.stop();
     stroom = null;
-    haalWeg("ik");
-    blok.classList.remove("actief");
+    for (const v of verbindingen.values()) sporenZetten(v.pc);
+    beeldenBijwerken();
     knoppenBijwerken();
+    post("aan", { belt: "0" }).catch(() => {});
+  }
+
+  // Het spel verlaten (of de pagina dicht): alles stoppen en afmelden.
+  function stoppen(stil) {
+    clearInterval(timer);
+    if (stroom) for (const spoor of stroom.getTracks()) spoor.stop();
+    stroom = null;
+    for (const id of [...verbindingen.keys()]) weg(id);
+    haalWeg("ik");
+    if (stil) navigator.sendBeacon("/beeld/uit");
+    else post("uit").catch(() => {});
   }
 
   function wissel(soort) {
@@ -256,7 +307,7 @@
     if (!knop) return;
     if (knop.dataset.beeld === "aan") bellen();
     else if (knop.dataset.beeld === "verder") aan();
-    else if (knop.dataset.beeld === "uit") uit();
+    else if (knop.dataset.beeld === "uit") ophangen();
     else wissel(knop.dataset.beeld);
   });
 
@@ -269,7 +320,18 @@
   document.addEventListener("pesten:ververst", function () {
     for (const [id, video] of videos) plaats(id, video);
   });
-  window.addEventListener("pagehide", function () { if (stroom) uit(true); });
+  // Browsers spelen geluid pas af als je iets op de pagina hebt aangeraakt (vooral
+  // iPhone): bij elke aanraking de video's van de anderen opnieuw starten.
+  for (const soort of ["pointerdown", "keydown"]) {
+    document.addEventListener(soort, function () {
+      for (const video of videos.values()) if (video.paused) video.play().catch(() => {});
+    }, true);
+  }
+  window.addEventListener("pagehide", function () { stoppen(true); });
 
-  window.pestenBeeld = { uit: function () { uit(false); window.pestenBeeld = null; } };
+  // Meteen meedoen als kijker: zo zie en hoor je wie er belt.
+  post("aan", { belt: "0" }).then(ophalen).catch(() => {});
+  timer = setInterval(ophalen, Number(blok.dataset.ververs) || 1000);
+
+  window.pestenBeeld = { uit: function () { stoppen(false); window.pestenBeeld = null; } };
 })();
