@@ -29,27 +29,20 @@
 {% set w = weergave %}
 <section class="tafel">
 
-  {# ---------- TEGENSTANDERS ---------- #}
-  <div class="tegenstanders">
-    {% for t in w.tegenstanders %}
-    <div class="stoel {% if t.beurt %}aan-zet{% endif %} {% if t.winnaar %}winnaar{% endif %}">
-      <div class="stoel-naam">{{ t.naam }}{% if t.gewonnen %} <span class="sterren" title="gewonnen rondes">★{{ t.gewonnen }}</span>{% endif %}</div>
-      {% if t.computer %}<div class="label">computer</div>{% endif %}
-      {% if w.klaar and t.hand %}
-      <div class="waaier open-hand">
-        {% for k in t.hand %}{{ kaart(k, "mini") }}{% endfor %}
-      </div>
-      {% else %}
-      <div class="waaier" aria-label="{{ t.aantal }} kaarten">
-        {% for _ in range([t.aantal, 10]|min) %}<span class="rug mini"></span>{% endfor %}
-      </div>
-      {% endif %}
-      <div class="stoel-aantal">
-        {% if t.winnaar %}Uit!{% elif t.aantal == 1 %}<span class="laatste-label">Laatste kaart!</span>{% else %}{{ t.aantal }} kaarten{% endif %}
-      </div>
+  {# ---------- SPELERSKAARTEN (met camerabeeld als dat aan staat) ---------- #}
+  {% with kaarten = w.tafel %}{% include "tafelkaarten.html" %}{% endwith %}
+
+  {# Einde van de ronde: de kaarten die de anderen nog hadden. #}
+  {% if w.klaar %}
+  <div class="open-handen">
+    {% for t in w.tegenstanders if t.hand %}
+    <div class="open-hand-rij">
+      <span class="stoel-naam">{{ t.naam }}</span>
+      <div class="waaier open-hand">{% for k in t.hand %}{{ kaart(k, "mini") }}{% endfor %}</div>
     </div>
     {% endfor %}
   </div>
+  {% endif %}
 
   {# ---------- MIDDEN: stapels ---------- #}
   <div class="midden-tafel">
@@ -81,7 +74,8 @@
     </div>
   </div>
 
-  <div class="status {% if w.ik.beurt %}jij{% endif %}" role="status">{{ w.status }}</div>
+  {# Alleen als er iets uit te leggen is; wie er aan de beurt is, zie je aan de spelerskaarten. #}
+  <div class="status {% if w.ik.beurt %}jij{% endif %}" role="status"{% if not w.status %} hidden{% endif %}>{{ w.status }}</div>
 
   {% if w.advies %}
   <div class="assistent" role="note"><span class="assistent-label">Tip</span>
@@ -103,7 +97,8 @@
         {% endif %}
       </span>
     </div>
-    <div class="hand">
+    {# --n: het aantal kaarten; met veel kaarten schuiven ze over elkaar, zodat ze in één rij passen. #}
+    <div class="hand" style="--n: {{ w.hand|length }}">
       {% for k in w.hand %}{{ kaart(k, ("speelbaar" if k.speelbaar else "") ~ (" nieuw" if k.nieuw else "") ~ (" tip" if k.tip else ""), knop=True) }}{% endfor %}
     </div>
   </form>
@@ -125,13 +120,9 @@
 <dialog id="spelmenu" class="venster menu">
   <h3>Menu</h3>
   {% if spel.online %}<p class="uitleg">Spelcode <b class="code">{{ spel.code }}</b></p>{% endif %}
-  {% if assistent_mogelijk %}
   <form method="post" action="{{ url_for('assistent') }}">
     <button class="knop" type="submit">Assistent {{ "uitzetten" if assistent_aan else "aanzetten" }}</button>
   </form>
-  {% else %}
-  <p class="uitleg">De assistent is er tegen de computer alleen op niveau makkelijk.</p>
-  {% endif %}
   <form method="post" action="{{ url_for('stoppen') }}">
     {% if spel.online %}
     <button class="knop" type="submit">Spel verlaten</button>

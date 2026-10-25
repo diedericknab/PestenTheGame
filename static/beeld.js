@@ -7,7 +7,10 @@
 // degene met de laagste id; de ander neemt op. Zo bellen ze elkaar nooit
 // tegelijk.
 //
-// Het blok #beeld blijft staan als de pagina ververst (zie toon() in basis.html).
+// Elk beeld komt in de spelerskaart van die speler (.speler-kaart met dezelfde data-id,
+// zie tafelkaarten.html; je eigen kaart heeft data-id "ik"). Het blok #beeld met de
+// knoppen blijft staan als de pagina ververst (zie toon() in basis.html); de video's
+// wachten dan even in #beeld .voorraad en gaan daarna in de nieuwe kaarten.
 (function () {
   // Een openbare STUN-server: daarmee vinden twee apparaten elkaars adres via
   // internet. Er gaat geen beeld of geluid langs.
@@ -16,7 +19,7 @@
 
   const blok = document.getElementById("beeld");
   if (!blok || window.pestenBeeld) return;
-  const tegels = blok.querySelector(".tegels");
+  const voorraad = blok.querySelector(".voorraad");
   const melding = blok.querySelector(".beeld-melding");
   const knoppen = {};
   for (const knop of blok.querySelectorAll("[data-beeld]")) knoppen[knop.dataset.beeld] = knop;
@@ -26,6 +29,7 @@
   let timer = null;
   let ophalenBezig = false;
   const verbindingen = new Map();   // id -> { pc, sinds }
+  const videos = new Map();         // id -> <video> ("ik" = je eigen beeld)
 
   function zeg(tekst) { melding.textContent = tekst || ""; }
 
@@ -36,32 +40,39 @@
     return antwoord.json();
   }
 
-  function tegel(id, naam, bron, eigen) {
-    let figuur = tegels.querySelector(`[data-id="${id}"]`);
-    if (!figuur) {
-      figuur = document.createElement("figure");
-      figuur.className = "tegel" + (eigen ? " eigen" : "");
-      figuur.dataset.id = id;
-      const video = document.createElement("video");
+  // Zet een video in de spelerskaart met deze id. Is er (nog) geen kaart, dan wacht hij
+  // in de voorraad; het geluid speelt dan gewoon door.
+  function plaats(id, video) {
+    const kaart = document.querySelector(`.speler-kaart[data-id="${id}"] .kaart-beeld`);
+    const plek = kaart || voorraad;
+    if (video.parentNode !== plek) plek.append(video);
+    video.play().catch(() => {});
+  }
+
+  function toon(id, bron, eigen) {
+    let video = videos.get(id);
+    if (!video) {
+      video = document.createElement("video");
       video.autoplay = true;
       video.playsInline = true;            // iPhone: niet schermvullend
       video.setAttribute("playsinline", "");
       video.muted = eigen;                 // jezelf hoor je niet terug
-      const onderschrift = document.createElement("figcaption");
-      figuur.append(video, onderschrift);
-      if (eigen) tegels.prepend(figuur); else tegels.append(figuur);
+      if (eigen) video.className = "eigen";
+      videos.set(id, video);
     }
-    figuur.querySelector("figcaption").textContent = naam;
-    const video = figuur.querySelector("video");
     if (video.srcObject !== bron) video.srcObject = bron;
-    video.play().catch(() => {});
+    plaats(id, video);
+  }
+
+  function haalWeg(id) {
+    const video = videos.get(id);
+    if (video) { video.srcObject = null; video.remove(); videos.delete(id); }
   }
 
   function weg(id) {
     const v = verbindingen.get(id);
     if (v) { v.pc.close(); verbindingen.delete(id); }
-    const figuur = tegels.querySelector(`[data-id="${id}"]`);
-    if (figuur) figuur.remove();
+    haalWeg(id);
   }
 
   // Wachten tot de browser al zijn adressen weet; dan gaat alles in één bericht.
@@ -80,7 +91,7 @@
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     verbindingen.set(id, { pc: pc, sinds: Date.now() });
     for (const spoor of stroom.getTracks()) pc.addTrack(spoor, stroom);
-    pc.ontrack = function (e) { tegel(id, naam, e.streams[0], false); };
+    pc.ontrack = function (e) { toon(id, e.streams[0], false); };
     pc.onconnectionstatechange = function () {
       if (pc.connectionState === "failed") weg(id);   // de volgende ronde opnieuw
     };
@@ -130,8 +141,6 @@
         const v = verbindingen.get(id);
         if (v && v.pc.connectionState !== "connected" && Date.now() - v.sinds > OPGEVEN_NA_MS) weg(id);
         if (!verbindingen.has(id) && ik < id) bel(id, naam);
-        const figuur = tegels.querySelector(`[data-id="${id}"] figcaption`);
-        if (figuur) figuur.textContent = naam;
       }
       for (const id of [...verbindingen.keys()]) if (!namen.has(id)) weg(id);
       const anderen = namen.size - 1;
@@ -169,7 +178,7 @@
       zeg("Geen toegang tot camera of microfoon. Sta het toe in de instellingen van je browser.");
       return;
     }
-    tegel("ik", "Jij", stroom, true);
+    toon("ik", stroom, true);
     knoppenBijwerken();
     await post("aan");
     zeg("Verbinden…");
@@ -186,8 +195,7 @@
       else navigator.sendBeacon("/beeld/uit");
     }
     stroom = null;
-    const eigen = tegels.querySelector('[data-id="ik"]');
-    if (eigen) eigen.remove();
+    haalWeg("ik");
     blok.classList.remove("actief");
     knoppenBijwerken();
     zeg("");
@@ -207,9 +215,14 @@
     else wissel(knop.dataset.beeld);
   });
 
-  // Na het verversen van de pagina staat dit blok er weer; de video's even opnieuw starten.
+  // Verversen van de pagina: eerst alle video's in de voorraad (die blijft staan),
+  // daarna in de nieuwe spelerskaarten. Beide gebeuren in dezelfde stap als het
+  // vervangen van de pagina, zodat de video's niet stoppen.
+  document.addEventListener("pesten:voor-verversen", function () {
+    for (const video of videos.values()) voorraad.append(video);
+  });
   document.addEventListener("pesten:ververst", function () {
-    for (const video of tegels.querySelectorAll("video")) video.play().catch(() => {});
+    for (const [id, video] of videos) plaats(id, video);
   });
   window.addEventListener("pagehide", function () { if (stroom) uit(true); });
 

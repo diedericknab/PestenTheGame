@@ -2,56 +2,59 @@
    KLEUREN VAN HET SPEL — pas hier de kleuren aan.
    spel.css gebruikt alleen deze namen, nergens eigen kleurcodes.
 
-   Pesten (gedrukt kaartspel):
-   papier (crème)      = de tafel en de panelen   -> achtergrond
-   inkt (bijna zwart)  = tekst, lijnen, knoppen   -> zoals op een gedrukte kaart
-   rood (vermiljoen)   = accent                   -> wie aan de beurt is, pestkaarten, stempels
-   blauw (Delfts)      = achterkant van de kaarten, tips
+   De kleuren volgen het WAGO-palet (wago.com/global/corporatedesign/interface-design/color):
+   papier (grijs)          = de tafel #dedfe1, de panelen iets lichter; de kaarten wit
+   inkt (donkerblauw)      = tekst, lijnen            -> #1f2837
+   groen                   = accent                   -> wie aan de beurt is, knoppen, wat je mag leggen
+   rood                    = waarschuwing             -> "Laatste kaart!", pakken, fouten, harten en ruiten
+   De oude namen (papier, inkt, rood, blauw) zijn gebleven, alleen de kleuren zijn anders.
    ============================================================= */
 :root {
   /* papier */
-  --papier: #efe6d4;
-  --papier-licht: #f9f4ea;      /* panelen en vensters */
-  --papier-donker: #e3d7c0;     /* de speelmat in het midden, keuzes onder de vinger */
-  --korrel: rgba(90, 68, 40, .07);   /* de korrel in het papier */
+  --papier: #dedfe1;
+  --papier-licht: #eff0f1;      /* panelen en vensters */
+  --papier-donker: #d2d4d8;     /* de speelmat in het midden, keuzes onder de vinger */
+  --korrel: rgba(31, 40, 55, .05);   /* de korrel in het papier */
 
   /* inkt */
-  --inkt: #1f1b17;
-  --inkt-zacht: #62584c;        /* uitlegtekst, kleine letters */
-  --lijn: #c9b998;              /* dunne lijnen */
-  --schaduw: rgba(31, 27, 23, .22);
-  --wit: #fffdf8;
+  --inkt: #1f2837;
+  --inkt-zacht: #616a73;        /* uitlegtekst, kleine letters */
+  --lijn: #a5a8af;              /* dunne lijnen */
+  --schaduw: rgba(31, 40, 55, .22);
+  --wit: #ffffff;
 
   /* accenten */
-  --rood: #b8321f;
-  --rood-donker: #8a2213;
-  --rood-licht: #f3d9cf;
-  --blauw: #1f3a68;
-  --blauw-donker: #132647;
-  --blauw-licht: #d7e0ee;
+  --groen: #6ec800;             /* wie aan de beurt is, knoppen; tekst erop in --inkt */
+  --groen-licht: #8bd333;
+  --rood: #bb0522;
+  --rood-donker: #8a0418;
+  --rood-licht: #f6d6db;
+  --blauw: #1f2837;
+  --blauw-donker: #1f2837;
+  --blauw-licht: #dedfe1;
 
   /* kaarten */
-  --kaart: #fffdf8;
-  --kaart-rood: #b8321f;
-  --kaart-zwart: #1f1b17;
-  --joker-1: #1f3a68;
-  --joker-2: #b8321f;
-  --rug: #1f3a68;
-  --rug-donker: #132647;
-  --rug-lijn: rgba(249, 244, 234, .38);
+  --kaart: #ffffff;
+  --kaart-rood: #bb0522;
+  --kaart-zwart: #1f2837;
+  --joker-1: #1f2837;
+  --joker-2: #bb0522;
+  --rug: #1f2837;
+  --rug-donker: #000000;
+  --rug-lijn: rgba(255, 255, 255, .26);
 
   /* spelen */
-  --speelbaar: #b8321f;         /* rand om kaarten die je kunt spelen */
-  --nieuw: #1f3a68;             /* stip op kaarten die je net hebt gepakt */
-  --tip: #1f3a68;               /* de kaart die de assistent aanraadt */
-  --pest: #b8321f;              /* pestkaarten in het logboek */
-  --straf: #8a2213;             /* strafkaarten en "+2" op tafel */
-  --laatste: #b8321f;           /* "Laatste kaart!" */
+  --speelbaar: #6ec800;         /* rand om kaarten die je kunt spelen */
+  --nieuw: #6ec800;             /* stip op kaarten die je net hebt gepakt */
+  --tip: #1f2837;               /* de kaart die de assistent aanraadt */
+  --pest: #bb0522;              /* pestkaarten in het logboek */
+  --straf: #bb0522;             /* strafkaarten en "+2" op tafel */
+  --laatste: #bb0522;           /* "Laatste kaart!" */
 
   /* meldingen en vensters */
-  --fout-achtergrond: #f3d9cf;
-  --fout-tekst: #6e1a0e;
-  --info-achtergrond: #d7e0ee;
-  --info-tekst: #132647;
-  --overlay: rgba(31, 27, 23, .55);
+  --fout-achtergrond: #f6d6db;
+  --fout-tekst: #8a0418;
+  --info-achtergrond: #ffffff;
+  --info-tekst: #1f2837;
+  --overlay: rgba(31, 40, 55, .55);
 }

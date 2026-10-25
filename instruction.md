@@ -161,7 +161,8 @@ instellingen van de Pi staan dan in `.env.pi` in de bronmap; wijzig ze daar, nie
 
 ### Beeld en geluid
 In een online spel staat bovenaan **Camera en microfoon aan**. Wie dat aanzet, ziet en hoort
-iedereen die het ook aan heeft. Daarna kun je de microfoon of camera even uitzetten, of
+iedereen die het ook aan heeft. Het beeld komt in de **spelerskaart** van die speler (in plaats
+van de twee letters), dus er is geen aparte balk met beelden en je hoeft niet te scrollen. Daarna kun je de microfoon of camera even uitzetten, of
 **Ophangen**. Op een iPhone of iPad vraagt Safari eerst om toestemming.
 
 - Het beeld en geluid gaan rechtstreeks tussen de apparaten (WebRTC), niet via de Pi. Om
@@ -177,9 +178,16 @@ iedereen die het ook aan heeft. Daarna kun je de microfoon of camera even uitzet
   verbinding niet. Daarvoor is een TURN-server nodig; die zit er (nog) niet in.
 
 ### Scherm 2: het spel
-- Bovenaan zitten de andere spelers (met hun aantal kaarten), in het midden de
-  **trekstapel** en de **open stapel**, onderaan jouw hand.
-- Ben je aan de beurt, dan komen de kaarten die je mag leggen omhoog, met een rode rand. Klik op een kaart om hem
+- Bovenaan staat voor elke speler een **spelerskaart**, in de volgorde waarin gespeeld wordt
+  (jij eerst). Op de kaart staan de eerste twee letters van de naam, of het camerabeeld als
+  die speler de camera aan heeft. Het getal in de cirkel is het aantal kaarten (rood: nog
+  één kaart). Wie aan de beurt is, heeft een groene kaart. Alle spelers
+  staan in één rij, ook met 6 spelers op een telefoon.
+- In het midden liggen de
+  **trekstapel** en de **open stapel**, onderaan jouw hand. Heb je veel kaarten, dan schuiven
+  ze over elkaar (de hoek met de waarde blijft te zien), zodat ze in één rij passen. Op een
+  iPhone past zo alles in één scherm.
+- Ben je aan de beurt, dan komen de kaarten die je mag leggen omhoog, met een groene rand. Klik op een kaart om hem
   te leggen. Bij een **boer** kies je daarna een kleur.
 - Kun of wil je niets leggen, klik dan op de trekstapel (**Pak**). Past de gepakte kaart,
   dan mag je hem leggen of op **Pas** klikken. Past hij niet, dan ben je klaar.
@@ -193,8 +201,8 @@ iedereen die het ook aan heeft. Daarna kun je de microfoon of camera even uitzet
   kaarten van de anderen bekijken. **Volgende ronde** deelt opnieuw; elke ronde begint de
   volgende speler.
 
-Rechtsboven staat het **tandwiel (⚙)**: assistent aan/uit (tegen de computer alleen op
-makkelijk, online altijd), **Nieuw spel / instellingen** (online: **Spel verlaten**) en **Afmelden**.
+Rechtsboven staat het **tandwiel (⚙)**: assistent aan/uit (in elk spel),
+**Nieuw spel / instellingen** (online: **Spel verlaten**) en **Afmelden**.
 
 ### De spelregels
 
@@ -217,15 +225,13 @@ De eerste open kaart is altijd een gewone kaart. Is de trekstapel op, dan worden
 kaarten (behalve de bovenste) geschud en de nieuwe trekstapel.
 
 ### De assistent
-Speel je tegen de computer op niveau **makkelijk**, of speel je online, en staat de assistent
-aan, dan staat er tijdens je beurt een tip boven je hand: welke kaart je het best kunt leggen
-en waarom. Die kaart krijgt een blauwe rand met "tip".
+Staat de assistent aan (in elk spel en op elk niveau), dan staat er tijdens je beurt een tip boven je hand: welke kaart je het best kunt leggen
+en waarom. Die kaart krijgt een donkerblauwe rand met "tip".
 Bij een boer licht ook de aangeraden kleur op, en met nog twee kaarten herinnert de
 assistent je aan **Laatste kaart!**. De assistent denkt zoals de computer op niveau moeilijk.
 
 De assistent is gewoon rekenwerk in het notebook (geen AI-dienst, geen internet nodig).
-Tegen de computer is er op normaal en moeilijk geen assistent. Je keuze blijft wel bewaard: kies je later weer
-makkelijk, dan staat hij weer zoals je hem had.
+Je keuze wordt bij je e-mailadres bewaard. Online ziet alleen jij je tips.
 
 Let op: er is geen wachtwoord. Wie een e-mailadres invult, ziet de naam, instellingen en
 scores die daarbij in de database staan.
@@ -252,7 +258,7 @@ In Jupyter komt de database in `database/pesten.db` naast het notebook.
 
 | Wat                                | Waar                                                |
 | ---------------------------------- | --------------------------------------------------- |
-| Kleuren                            | `static/kleuren.css`                                |
+| Kleuren (het WAGO-palet)           | `static/kleuren.css`                                |
 | Opmaak (indeling, groottes van de kaarten) | `static/spel.css` (`--kaart-b` is de breedte van een kaart) |
 | Animaties (kaart neerleggen, pakken) | `static/spel.css` (zoek op `@keyframes`)          |
 | Lettertype (Lilita One)            | `templates/basis.html` (Google Fonts) en `static/spel.css` |
@@ -260,7 +266,6 @@ In Jupyter komt de database in `database/pesten.db` naast het notebook.
 | Spelregels en hun teksten          | Sectie 2 van het notebook (`REGELS`)                |
 | Aantal kaarten bij 2, joker en vergeten "Laatste kaart!" | Sectie 2 (`TWEE_PAKKEN`, `JOKER_PAKKEN`, `STRAF_LAATSTE_KAART`) |
 | Namen en niveaus van de computers  | Sectie 2 (`COMPUTER_NAMEN`, `NIVEAUS`, `VERGEET_KANS`) |
-| Op welke niveaus de assistent er is | Sectie 2 (`ASSISTENT_NIVEAUS`)                     |
 | Pauze tussen de zetten van de computers | Sectie 2 (`COMPUTER_PAUZE_MS`)                 |
 | Wat een nieuwe speler standaard ziet | Sectie 2 (`STANDAARD_INSTELLINGEN`)               |
 | Hoe slim de computers en de assistent kiezen | Sectie 6 (`waardeer`, `advies`)           |
@@ -420,7 +425,7 @@ toegestaan adres kent, kan daarmee spelen en ziet de naam, instellingen en score
 | Melding "is geen geldig e-mailadres" | Controleer het e-mailadres (bijvoorbeeld een spatie of een ontbrekende `@`). |
 | Een kaart licht niet op | Die kaart past niet. Klik je er toch op (zonder JavaScript), dan zegt de melding waarom. |
 | De computers doen niets | JavaScript staat uit of de verbinding is weg; ververs de pagina. Staat er een venster open (⚙ of kleur kiezen), dan wachten de computers tot je het sluit. |
-| Geen assistent te zien | Tegen de computer is de assistent er alleen op niveau makkelijk; online altijd. Je ziet hem alleen als je aan de beurt bent. Zet hem aan achter het tandwiel. |
+| Geen assistent te zien | Je ziet hem alleen als je aan de beurt bent. Zet hem aan achter het tandwiel. |
 | "Er is geen spel met de code ..." | Controleer de code. Na een herstart van de server zijn alle lopende spellen weg: maak een nieuw spel. |
 | "Dit spel is al begonnen" | Meedoen kan alleen in de wachtkamer. Wie al meedeed, komt met hetzelfde e-mailadres wel terug op zijn plaats. |
 | Camera: "werken alleen via https" | Open het spel via `https://` met een vertrouwd certificaat (hoofdstuk 6). Op een iPhone met een IP-adres: installeer het hoofdcertificaat van Caddy. |

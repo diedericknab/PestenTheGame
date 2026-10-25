@@ -1,6 +1,9 @@
 {% extends "basis.html" %}
 {% block inhoud %}
 {# ---------- WACHTKAMER (online, voor het spel begint) ---------- #}
+{# Wie er al is, als spelerskaart: zet je camera aan, dan zie je elkaar hier al. #}
+{% with kaarten = w.tafel %}{% include "tafelkaarten.html" %}{% endwith %}
+
 <section class="paneel wachtkamer">
   <p class="bovenschrift">Wachtkamer</p>
   <h2>Wie doet er mee?</h2>

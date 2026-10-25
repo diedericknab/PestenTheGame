@@ -6,7 +6,7 @@ staan in `pesten_spel.ipynb`.
 Eerst meld je je aan met je e-mailadres en naam, en kies je de spelvorm, het aantal
 computerspelers en het niveau (makkelijk, normaal, moeilijk). Achter het tandwiel (⚙)
 staan het aantal startkaarten, de spelregels (welke pestkaarten meedoen) en de
-**assistent**: tips tijdens het spel, alleen op niveau makkelijk. Alles wordt bij je
+**assistent**: tips tijdens het spel, in elk spel en op elk niveau. Alles wordt bij je
 e-mailadres bewaard in een SQLite-database, samen met je gespeelde en gewonnen rondes.
 
 Spelvormen: **alleen tegen de computer**, of **online**: iedereen op een eigen telefoon,
@@ -31,7 +31,7 @@ Na een wijziging in het notebook, de templates of de CSS: opnieuw `docker compos
 
 ## Aanpassen
 - Spelregels, aantal strafkaarten, computerspelers, niveaus: sectie 2 van het notebook.
-- Kleuren: `static/kleuren.css`; `static/spel.css` bevat alleen de opmaak.
+- Kleuren: `static/kleuren.css` (het WAGO-palet); `static/spel.css` bevat alleen de opmaak.
 - Beeld en geluid: `static/beeld.js`.
 
 ## Naar de Raspberry Pi

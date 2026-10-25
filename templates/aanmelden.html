@@ -85,7 +85,7 @@
         <label class="keuze" id="assistent-keuze">
           <input type="checkbox" name="assistent" value="1" {% if instellingen.assistent %}checked{% endif %}>
           <span>Tips tijdens het spel: welke kaart je het best kunt leggen en waarom.
-            <small>Tegen de computer alleen op niveau {{ assistent_niveaus|join(", ") }}. Online kan het altijd; alleen jij ziet je tips.</small></span>
+            <small>In elk spel en op elk niveau; alleen jij ziet je tips.</small></span>
         </label>
       </fieldset>
       <div data-alleen-maken>
@@ -143,8 +143,6 @@
     }
 
     // Wat er bij de gekozen spelvorm hoort, en wat er achter het tandwiel staat in één regel.
-    // De assistent kan tegen de computer alleen op bepaalde niveaus; online altijd.
-    const assistentNiveaus = {{ assistent_niveaus|list|tojson }};
     function bijwerken() {
       const online = formulier.querySelector("[name=spelvorm]:checked")?.value === "online";
       const meedoen = online && code.value.trim() !== "";
@@ -162,13 +160,9 @@
         : "Je krijgt een spelcode en een link om te delen. Maximaal {{ max_spelers }} spelers, computers meegeteld.";
       document.getElementById("startknop").textContent = meedoen ? "Doe mee" : online ? "Maak het spel" : "Start spel";
 
-      const niveau = formulier.querySelector("[name=niveau]:checked");
-      const mogelijk = online || (niveau && assistentNiveaus.includes(niveau.value));
-      document.getElementById("assistent-keuze").classList.toggle("uit", !mogelijk);
       const regels = formulier.querySelectorAll("[name=regel]");
       const aan = [...regels].filter(r => r.checked).length;
-      const assistent = mogelijk ? (formulier.elements.assistent.checked ? "assistent aan" : "assistent uit")
-                                 : "geen assistent op dit niveau";
+      const assistent = formulier.elements.assistent.checked ? "assistent aan" : "assistent uit";
       document.getElementById("samenvatting").textContent = meedoen ? assistent :
         `${formulier.elements.startkaarten.value} kaarten · ${aan} van ${regels.length} regels aan · ${assistent}`;
     }

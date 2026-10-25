@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#efe6d4">
+  <meta name="theme-color" content="#dedfe1">
   <title>Pesten — kaartspel</title>
   <!-- Lettertypen: Fraunces (titels en kaarten) en Atkinson Hyperlegible (tekst).
        Zonder internet vallen ze terug op Georgia en de systeemletter. -->
@@ -35,7 +35,9 @@
     {% endif %}
   </header>
 
-  {# Beeld en geluid (online). Dit blok blijft staan als de pagina ververst, zodat het gesprek doorloopt. #}
+  {# Beeld en geluid (online): de knoppen. De beelden zelf staan in de spelerskaarten
+     (tafelkaarten.html). Dit blok blijft staan als de pagina ververst, zodat het gesprek
+     doorloopt; in .voorraad wachten de beelden even tijdens het verversen. #}
   {% if spel and spel.online %}
   <section id="beeld" class="beeld" data-ververs="{{ beeld_ververs_ms }}" aria-label="Beeld en geluid">
     <div class="beeld-knoppen">
@@ -45,7 +47,7 @@
       <button class="knop klein secundair" type="button" data-beeld="uit" hidden>Ophangen</button>
       <small class="beeld-melding" role="status"></small>
     </div>
-    <div class="tegels"></div>
+    <div class="voorraad" hidden></div>
   </section>
   {% endif %}
 
@@ -98,6 +100,9 @@
       if (oudeKaart && nieuweKaart && oudeKaart.dataset.code === nieuweKaart.dataset.code) {
         nieuweKaart.classList.add("stil");
       }
+      // De camerabeelden gaan even naar het blok #beeld en daarna in de nieuwe spelerskaarten
+      // (zie beeld.js). Alles gebeurt in één keer, zodat de video's niet stoppen.
+      document.dispatchEvent(new Event("pesten:voor-verversen"));
       const body = document.adoptNode(nieuw.body);
       const oudBeeld = document.getElementById("beeld");
       const plek = body.querySelector("#beeld");

@@ -1,6 +1,6 @@
 /* Opmaak van het spel. De kleuren staan in kleuren.css.
    Stijl: een gedrukt kaartspel. Crème papier, inktlijnen, platte schaduwen
-   (alsof alles een beetje verschoven gedrukt is), rood als accent. */
+   (alsof alles een beetje verschoven gedrukt is). Kleuren van WAGO, groen als accent. */
 
 * { box-sizing: border-box; }
 
@@ -19,7 +19,7 @@ body {
   margin: 0;
   background-color: var(--papier);
   /* korrel van het papier (een klein ruispatroon) */
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='k'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .16 0 0 0 .09 0'/></filter><rect width='100%' height='100%' filter='url(%23k)'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='k'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .12 0 0 0 0 .16 0 0 0 0 .22 0 0 0 .06 0'/></filter><rect width='100%' height='100%' filter='url(%23k)'/></svg>");
   color: var(--inkt);
   font-family: var(--tekst);
   font-size: 16px;
@@ -78,7 +78,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
   display: inline-block; border: var(--rand); border-radius: 6px; cursor: pointer;
   padding: 11px 22px; min-height: 44px;
   font: 700 1rem/1.2 var(--tekst); letter-spacing: .01em;
-  background: var(--rood); color: var(--wit);
+  background: var(--groen); color: var(--inkt);
   box-shadow: var(--druk);
   transition: transform .08s, box-shadow .08s;
 }
@@ -107,11 +107,11 @@ main { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
   padding: 22px 22px 24px; box-shadow: 5px 5px 0 var(--lijn);
 }
 .start, .wachtkamer { max-width: 640px; margin: 0 auto; }
-.bovenschrift { margin: 0; color: var(--rood); }
+.bovenschrift { margin: 0; color: var(--inkt-zacht); }
 .paneel h2 { margin: 2px 0 6px; font-size: 2.1rem; line-height: 1.1; }
 .uitleg { color: var(--inkt-zacht); margin: 6px 0 14px; }
 fieldset { border: 0; border-top: var(--rand); margin: 0 0 14px; padding: 12px 0 4px; }
-legend { color: var(--rood); padding: 0 8px 0 0; }
+legend { color: var(--inkt-zacht); padding: 0 8px 0 0; }
 .invoer { display: grid; gap: 4px; margin-bottom: 12px; }
 .invoer > span { font-weight: 700; }
 .invoer span small { color: var(--inkt-zacht); font-weight: 400; }
@@ -132,8 +132,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .keuzes { display: grid; gap: 2px; margin-bottom: 10px; }
 .keuze { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 4px; cursor: pointer; }
 .keuze:has(input:checked) { background: var(--papier-donker); }
-.keuze input { margin-top: 4px; accent-color: var(--rood); width: 18px; height: 18px; flex: none; }
-.keuze.uit { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.keuze input { margin-top: 4px; accent-color: var(--groen); width: 18px; height: 18px; flex: none; }
 .keuze small { display: block; color: var(--inkt-zacht); }
 [hidden] { display: none !important; }
 
@@ -171,7 +170,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
   content: counter(stoel); font-family: var(--titel); font-weight: 700; color: var(--inkt-zacht);
   width: 1.4rem; text-align: right;
 }
-.aan-tafel li.ik .stoel-naam { color: var(--rood); }
+.aan-tafel li.ik .stoel-naam { color: var(--inkt); text-decoration: underline 3px var(--groen); text-underline-offset: 3px; }
 .aan-tafel li.leeg { color: var(--lijn); font-style: italic; }
 .label {
   display: inline-block; padding: 2px 7px; border: 1px solid currentColor; border-radius: 3px;
@@ -179,30 +178,16 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 }
 .computers-kiezen { margin-bottom: 14px; }
 .wachten { display: flex; align-items: center; gap: 10px; font-family: var(--titel); font-style: italic; font-size: 1.2rem; }
-.wacht-stip { width: 10px; height: 10px; border-radius: 50%; background: var(--rood); animation: puls 1.2s ease-in-out infinite alternate; }
+.wacht-stip { width: 10px; height: 10px; border-radius: 50%; background: var(--groen); animation: puls 1.2s ease-in-out infinite alternate; }
 @keyframes puls { to { opacity: .2; } }
 .regels-overzicht { margin-top: 18px; border-top: 1px solid var(--lijn); padding-top: 10px; }
 .regels-overzicht summary { cursor: pointer; font-weight: 700; }
 .regels-overzicht ul { margin: 8px 0 0; padding-left: 20px; color: var(--inkt-zacht); }
 
-/* ---------- beeld en geluid ---------- */
-.beeld { max-width: 1100px; margin: 0 auto 14px; padding: 0 16px; }
+/* ---------- beeld en geluid: de knoppen (de beelden staan in de spelerskaarten) ---------- */
+.beeld { max-width: 1100px; margin: 0 auto 12px; padding: 0 16px; }
 .beeld-knoppen { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .beeld-melding { color: var(--inkt-zacht); }
-.tegels { display: flex; gap: 10px; overflow-x: auto; padding: 0 2px 4px; scroll-snap-type: x proximity; }
-.beeld.actief .tegels { margin-top: 10px; }
-.tegel {
-  position: relative; flex: none; width: 128px; aspect-ratio: 4 / 3; margin: 0;
-  border: var(--rand); border-radius: 6px; overflow: hidden; background: var(--inkt);
-  box-shadow: var(--druk-zacht); scroll-snap-align: start;
-}
-.tegel video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.tegel.eigen video { transform: scaleX(-1); }   /* jezelf zie je in spiegelbeeld */
-.tegel figcaption {
-  position: absolute; left: 0; bottom: 0; max-width: 100%; padding: 2px 7px;
-  background: var(--papier-licht); border-top: var(--rand); border-right: var(--rand); border-top-right-radius: 4px;
-  font-size: .75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
 
 /* ---------- speelkaarten ---------- */
 .kaart {
@@ -245,23 +230,68 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 /* ---------- de tafel ---------- */
 .tafel { display: grid; gap: 14px; }
 
-.tegenstanders { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.stoel {
-  min-width: 128px; flex: 0 1 168px; padding: 8px 10px 9px; text-align: center;
-  background: var(--papier-licht); border: var(--rand); border-radius: 6px;
+/* Spelerskaarten: even groot als een camerabeeld. Zonder camera de eerste twee
+   letters van de naam, met camera het beeld. Rechtsboven het aantal kaarten.
+   Altijd één rij, ook met 6 spelers op een telefoon. */
+.tafel-kaarten {
+  display: grid; gap: 10px; justify-content: center;
+  grid-template-columns: repeat(var(--kolommen), minmax(0, 120px));
+  padding: 6px 6px 0;   /* ruimte voor het rondje op de hoek */
+}
+.speler-kaart {
+  position: relative; margin: 0; min-width: 0;
+  border: var(--rand); border-radius: 6px; background: var(--papier-licht);
   box-shadow: var(--druk-zacht);
 }
-.stoel.aan-zet { background: var(--inkt); color: var(--papier-licht); box-shadow: 3px 3px 0 var(--rood); }
-.stoel.aan-zet .stoel-aantal, .stoel.aan-zet .label { color: var(--papier-donker); }
-.stoel.winnaar { box-shadow: 3px 3px 0 var(--rood); border-color: var(--rood); }
-.stoel .label { margin-top: 3px; }
+.kaart-beeld {
+  position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 5px;
+  display: grid; place-items: center;
+}
+.kaart-beeld video {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  background: var(--inkt);
+}
+.kaart-beeld video.eigen { transform: scaleX(-1); }   /* jezelf zie je in spiegelbeeld */
+.initialen {
+  font-family: var(--titel); font-weight: 900; font-style: italic; line-height: 1;
+  font-size: clamp(1.6rem, 6vw, 2.6rem); letter-spacing: -.02em; color: var(--inkt);
+  padding-bottom: 14px;   /* niet achter de naam onderaan */
+}
+.speler-kaart.computer .initialen { color: var(--inkt-zacht); }
+.speler-kaart.ik .initialen { color: var(--inkt); }
+.speler-kaart figcaption {
+  position: absolute; left: 0; bottom: 0; max-width: calc(100% - 2px); padding: 2px 7px;
+  background: var(--papier-licht); border-top: var(--rand); border-right: var(--rand);
+  border-radius: 0 4px 0 5px;
+  font-size: .75rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.speler-kaart figcaption small { font-weight: 400; color: var(--inkt-zacht); }
+.aantal-rondje {
+  position: absolute; top: -9px; right: -9px; z-index: 1;
+  min-width: 30px; height: 30px; padding: 0 6px; border-radius: 15px;
+  display: grid; place-items: center;
+  background: var(--wit); color: var(--inkt); border: var(--rand); box-shadow: 2px 2px 0 var(--inkt);
+  font-family: var(--titel); font-weight: 800; font-size: 1rem; line-height: 1;
+}
+.aantal-rondje.laatste { background: var(--rood); color: var(--wit); animation: puls-rondje 1s ease-in-out infinite alternate; }
+@keyframes puls-rondje { to { transform: scale(1.12); } }
+/* aan de beurt: een groene kaart (met camera: een groene rand) */
+.speler-kaart.aan-zet { background: var(--groen); box-shadow: 4px 4px 0 var(--inkt); }
+.speler-kaart.aan-zet .initialen { color: var(--inkt); }
+.speler-kaart.aan-zet:has(video) { outline: 4px solid var(--groen); outline-offset: 1px; }
+.speler-kaart.winnaar { border-color: var(--inkt); box-shadow: 4px 4px 0 var(--groen); }
+.speler-kaart.winnaar .aantal-rondje { background: var(--groen); color: var(--inkt); }
+.speler-kaart:has(video) .initialen { visibility: hidden; }
 .stoel-naam { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sterren { color: var(--rood); font-weight: 700; font-size: .9em; }
-.stoel.aan-zet .sterren { color: var(--rood-licht); }
-.stoel-aantal { color: var(--inkt-zacht); font-size: .88rem; margin-top: 4px; }
-.laatste-label { color: var(--laatste); font-weight: 700; text-transform: uppercase; font-size: .78rem; letter-spacing: .08em; }
-.stoel.aan-zet .laatste-label { color: var(--rood-licht); }
-.waaier { display: flex; justify-content: center; min-height: calc(var(--mini-b) * 1.4); margin-top: 6px; }
+.sterren { color: var(--inkt); font-weight: 700; font-size: .9em; }
+
+/* einde van de ronde: de kaarten die de anderen nog hadden */
+.open-handen { display: grid; gap: 8px; }
+.open-hand-rij {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 12px; background: var(--papier-licht); border: var(--rand); border-radius: 6px;
+}
+.waaier { display: flex; justify-content: center; min-height: calc(var(--mini-b) * 1.4); }
 .waaier > * + * { margin-left: calc(var(--mini-b) * -.58); }
 .waaier.open-hand { flex-wrap: wrap; row-gap: 3px; }
 .waaier.open-hand > * + * { margin-left: 2px; }
@@ -323,14 +353,14 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
   text-align: center; font-size: 1.35rem; font-style: italic; font-weight: 600; padding: 2px 12px;
   color: var(--inkt-zacht);
 }
-.status.jij { color: var(--rood); }
+.status.jij { color: var(--inkt); }
 
 /* ---------- jouw hand ---------- */
 .mijn-hand {
   background: var(--papier-licht); border: var(--rand); border-radius: 6px; padding: 10px 12px 16px;
   box-shadow: var(--druk-zacht);
 }
-.mijn-hand.aan-zet { box-shadow: 4px 4px 0 var(--rood); border-color: var(--inkt); }
+.mijn-hand.aan-zet { box-shadow: 4px 4px 0 var(--groen); border-color: var(--inkt); }
 .hand-kop { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .hand-knoppen { display: flex; gap: 8px; align-items: center; }
 .laatste-knop {
@@ -341,7 +371,13 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .laatste-knop input { accent-color: var(--rood); width: 18px; height: 18px; margin: 0; }
 .laatste-knop:has(input:checked) { background: var(--rood); color: var(--wit); }
 
-.hand { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding-top: 14px; }
+.hand { --hand-gap: 8px; display: flex; justify-content: center; padding-top: 14px; }
+/* Passen de kaarten niet naast elkaar, dan schuiven ze over elkaar (de hoek met de waarde
+   blijft zichtbaar). --n is het aantal kaarten (zie spel.html); 100% is de breedte van de hand. */
+.hand > .kaart + .kaart {
+  margin-left: max(calc(var(--kaart-b) * -.75),
+                   min(var(--hand-gap), calc((100% - var(--n) * var(--kaart-b)) / (var(--n) - 1))));
+}
 .hand .kaart { cursor: pointer; transition: transform .12s; touch-action: manipulation; }
 .hand .kaart:disabled { cursor: default; }
 .mijn-hand.aan-zet .hand .kaart:disabled { opacity: .5; }
@@ -369,7 +405,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .logboek .pest { color: var(--pest); }
 .logboek .straf { color: var(--straf); font-weight: 700; }
 .logboek .laatste { color: var(--laatste); }
-.logboek .winst, .logboek .ronde { color: var(--blauw); font-weight: 700; }
+.logboek .winst, .logboek .ronde { color: var(--inkt); font-weight: 700; }
 
 /* ---------- assistent ---------- */
 .assistent {
@@ -415,11 +451,11 @@ dialog.venster::backdrop { background: var(--overlay); }
 }
 @keyframes verschijn { from { opacity: 0; } }
 .eind { max-width: 460px; width: 100%; text-align: center; }
-.eind-kop { margin: 0; font-size: 2.6rem; font-style: italic; font-weight: 900; color: var(--rood); }
+.eind-kop { margin: 0; font-size: 2.6rem; font-style: italic; font-weight: 900; color: var(--groen); text-shadow: 2px 2px 0 var(--inkt); }
 .stand { width: 100%; border-collapse: collapse; margin: 14px 0 18px; }
 .stand th, .stand td { padding: 7px 8px; border-bottom: 1px solid var(--lijn); }
 .stand th { color: var(--inkt-zacht); font-size: .66rem; border-bottom: var(--rand); }
-.stand tr.ik td { font-weight: 700; color: var(--rood); }
+.stand tr.ik td { font-weight: 700; color: var(--inkt); background: var(--papier); }
 .eind-knoppen { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
 .toon-uitslag { display: none; }
 .overlay.verborgen { background: none; pointer-events: none; place-items: end; }
@@ -439,18 +475,42 @@ dialog.venster::backdrop { background: var(--overlay); }
   .spelcode .knop { margin-left: 0; }
   .spelcode-tekens span { width: 1.9rem; height: 2.4rem; font-size: 1.4rem; }
   .beeld { padding: 0 12px; }
-  .tegel { width: 92px; aspect-ratio: 3 / 4; }
-  .tegenstanders { gap: 6px; }
-  .stoel { min-width: 0; flex: 1 1 30%; padding: 6px 4px; font-size: .9rem; }
-  .midden-tafel { gap: 12px; padding: 14px 6px 12px; }
-  .stapel, .aflegstapel .kaart { --kaart-b: 66px; }
-  .aflegstapel { width: 88px; height: 112px; }
+  /* Alles moet op een iPhone in één scherm passen: spelers, tafel en je hand. */
+  .kop { padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: 6px; margin-bottom: 8px; }
+  .beeld { margin-bottom: 8px; }
+  .tafel { gap: 10px; }
+  .tafel-kaarten { grid-template-columns: repeat(var(--kolommen), minmax(0, 96px)); gap: 8px 6px; }
+  .kaart-beeld { aspect-ratio: 1; }
+  .initialen { font-size: clamp(1.2rem, 6vw, 2rem); }
+  .speler-kaart figcaption { font-size: .68rem; padding: 1px 5px; }
+  .speler-kaart figcaption small { display: none; }
+  .aantal-rondje { min-width: 26px; height: 26px; font-size: .9rem; top: -8px; right: -8px; }
+  .midden-tafel { gap: 12px; padding: 10px 6px 8px; }
+  .trekstapel, .afleg-plek { gap: 4px; }
+  .stapel, .aflegstapel .kaart { --kaart-b: 58px; }
+  .aflegstapel { width: 78px; height: 98px; }
   .aflegstapel .kaart { left: 8px; top: 6px; }
-  .tafel-info { min-width: 0; }
+  .tafel-info { min-width: 0; gap: 8px; }
   .richting small { display: none; }
   .te-pakken { width: 50px; height: 50px; font-size: 1.25rem; }
-  .hand { gap: 6px; }
-  .status { font-size: 1.15rem; }
+  .mijn-hand { padding: 8px 10px 10px; }
+  .laatste-knop { min-height: 34px; padding: 4px 10px; }
+  .hand { --hand-gap: 6px; padding-top: 12px; }
+  .hand .kaart.tip::before { left: 2px; transform: none; }   /* links: dat deel blijft zichtbaar */
+  .assistent { padding: 7px 10px; gap: 8px; font-size: .9rem; line-height: 1.35; }
+  .status { font-size: 1.1rem; padding: 0 8px; }
+}
+
+/* lage telefoon (iPhone SE met de balken van Safari): de tafel nog wat kleiner */
+@media (max-width: 640px) and (max-height: 600px) {
+  .logo-tekst { font-size: 1.45rem; }
+  .kop { padding-top: calc(4px + env(safe-area-inset-top)); padding-bottom: 4px; }
+  .midden-tafel { padding: 8px 6px 6px; }
+  .plek { display: none; }
+  .stapel, .aflegstapel .kaart { --kaart-b: 50px; }
+  .stapel-tekst { font-size: .8rem; padding: 2px 4px; white-space: nowrap; }
+  .aflegstapel { width: 70px; height: 84px; }
+  .aflegstapel .kaart { top: 4px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
