@@ -3,53 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#dedfe1">
+  <meta name="theme-color" content="#1d6b35">
   <title>Pesten — kaartspel</title>
-  <!-- Lettertypen: Fraunces (titels en kaarten) en Atkinson Hyperlegible (tekst).
-       Zonder internet vallen ze terug op Georgia en de systeemletter. -->
+  <!-- Lettertypen: Roboto Slab (de titel), Bree Serif (namen, knoppen, koppen) en Atkinson
+       Hyperlegible (tekst). Zonder internet vallen ze terug op Georgia en de systeemletter. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,500..900;1,9..144,500..900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bree+Serif&family=Roboto+Slab:wght@700;800&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='kleuren.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='spel.css') }}">
 </head>
 {# Online: data-versie laat de pagina verversen als een ander iets doet (zie het script onderaan). #}
 <body data-pagina="{{ pagina|default('spel' if spel else 'aanmelden') }}"
       {% if spel and spel.online %}data-versie="{{ spel.versie }}" data-ververs="{{ ververs_ms }}"{% endif %}>
+  {% from "iconen.html" import icoon %}
   <header class="kop">
-    <h1 class="logo" aria-label="Pesten">
-      <span class="logo-kaarten" aria-hidden="true"><span>♥</span><span>♠</span><span>♦</span><span>♣</span></span>
-      <span class="logo-tekst" aria-hidden="true">Pesten</span>
-    </h1>
+    <h1 class="logo">Pesten <small>2.0</small></h1>
     {% if email %}
     <div class="kop-rechts">
-      <span class="aangemeld" title="{{ email }}">{{ naam or email }}</span>
       {% if spel %}
-      <button class="tandwiel klein" type="button" data-open="spelmenu" aria-label="Menu">{% include "tandwiel.svg" %}</button>
+      {# Settings: het menu van de pagina (assistent, spelcode, afmelden). Stop: het spel verlaten. #}
+      <button class="rond-knop" type="button" data-open="spelmenu">{{ icoon("tandwiel") }}<span>Settings</span></button>
+      <form method="post" action="{{ url_for('stoppen') }}">
+        <button class="rond-knop" type="submit">{{ icoon("deur") }}<span>Stop</span></button>
+      </form>
       {% else %}
       <form method="post" action="{{ url_for('afmelden') }}">
-        <button class="knop klein secundair" type="submit">Afmelden</button>
+        <button class="rond-knop" type="submit">{{ icoon("deur") }}<span>Afmelden</span></button>
       </form>
       {% endif %}
     </div>
     {% endif %}
   </header>
-
-  {# Beeld en geluid (online): de knoppen. De beelden zelf staan in de spelerskaarten
-     (tafelkaarten.html). Dit blok blijft staan als de pagina ververst, zodat het gesprek
-     doorloopt; in .voorraad wachten de beelden even tijdens het verversen. #}
-  {% if spel and spel.online %}
-  <section id="beeld" class="beeld" data-ververs="{{ beeld_ververs_ms }}" aria-label="Beeld en geluid">
-    <div class="beeld-knoppen">
-      <button class="knop klein" type="button" data-beeld="aan">Camera en microfoon aan</button>
-      <button class="knop klein secundair" type="button" data-beeld="microfoon" hidden>Microfoon uit</button>
-      <button class="knop klein secundair" type="button" data-beeld="camera" hidden>Camera uit</button>
-      <button class="knop klein secundair" type="button" data-beeld="uit" hidden>Ophangen</button>
-      <small class="beeld-melding" role="status"></small>
-    </div>
-    <div class="voorraad" hidden></div>
-  </section>
-  {% endif %}
 
   {% with berichten = get_flashed_messages(with_categories=true) %}
     {% if berichten %}

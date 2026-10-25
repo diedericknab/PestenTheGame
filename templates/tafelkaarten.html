@@ -1,19 +1,33 @@
-{# De spelerskaarten: één per speler, even groot als een camerabeeld, in speelvolgorde (jij
-   eerst). Zonder camera staan er de eerste twee letters van de naam; met de camera aan zet
-   static/beeld.js het beeld in .kaart-beeld (de kaart met dezelfde data-id).
-   Alle kaarten staan in één rij, ook met 6 spelers op een telefoon.
-   Verwacht: kaarten (zie tafel_kaarten in het notebook). #}
-<div class="tafel-kaarten" style="--kolommen: {{ kaarten|length }}">
-  {% for p in kaarten %}
-  {% set uitleg = p.naam ~ (", " ~ p.aantal ~ (" kaart" if p.aantal == 1 else " kaarten") if p.aantal is defined else "") ~ (", aan de beurt" if p.beurt else "") %}
-  <figure class="speler-kaart{% if p.ik %} ik{% endif %}{% if p.beurt %} aan-zet{% endif %}{% if p.winnaar %} winnaar{% endif %}{% if p.computer %} computer{% endif %}"
-          data-id="{{ p.id }}" aria-label="{{ uitleg }}">
-    <div class="kaart-beeld"><span class="initialen" aria-hidden="true">{{ p.initialen }}</span></div>
+{# De spelerskaarten: een avatar in een cirkel (man of vrouw, zie avatar in het notebook) met
+   eronder een naambord met het aantal kaarten. Met de camera aan zet static/beeld.js het beeld
+   in .kaart-beeld (de kaart met dezelfde data-id; je eigen kaart heeft data-id "ik").
+   Wie aan de beurt is, krijgt een zandloper.
+   Verwacht per speler wat tafel_kaarten in het notebook maakt. #}
+{% from "iconen.html" import icoon %}
+
+{% macro speler(p, bord=True) -%}
+{% set uitleg = p.naam ~ (", " ~ p.aantal ~ (" kaart" if p.aantal == 1 else " kaarten") if p.aantal is defined else "") ~ (", aan de beurt" if p.beurt else "") %}
+<figure class="speler-kaart{% if p.ik %} ik{% endif %}{% if p.beurt %} aan-zet{% endif %}{% if p.winnaar %} winnaar{% endif %}{% if p.computer %} computer{% endif %}"
+        data-id="{{ p.id }}" aria-label="{{ uitleg }}">
+  <div class="avatar">
+    <div class="kaart-beeld"><img class="avatar-plaatje" src="{{ url_for('static', filename='avatars/' ~ p.avatar ~ '.svg') }}" alt="" draggable="false"></div>
+    {% if p.beurt %}<span class="zandloper" title="Aan de beurt">{{ icoon("zandloper") }}</span>{% endif %}
+  </div>
+  {% if bord %}
+  <figcaption class="naambord" aria-hidden="true">
+    <span class="naam">{{ "Jij" if p.ik else p.naam }}{% if p.gewonnen %} <span class="sterren">★{{ p.gewonnen }}</span>{% endif %}</span>
     {% if p.aantal is defined %}
-    <span class="aantal-rondje{% if p.aantal == 1 and not p.winnaar %} laatste{% endif %}" aria-hidden="true"
-          title="{% if p.winnaar %}Uit!{% elif p.aantal == 1 %}Laatste kaart!{% else %}{{ p.aantal }} kaarten{% endif %}">{% if p.winnaar %}★{% else %}{{ p.aantal }}{% endif %}</span>
+    <span class="aantal{% if p.aantal == 1 and not p.winnaar %} laatste{% endif %}"
+          title="{% if p.winnaar %}Uit!{% elif p.aantal == 1 %}Laatste kaart!{% else %}{{ p.aantal }} kaarten{% endif %}"><span class="rug-icoon"></span>{% if p.winnaar %}★{% else %}{{ p.aantal }}{% endif %}</span>
     {% endif %}
-    <figcaption aria-hidden="true">{{ "Jij" if p.ik else p.naam }}{% if p.gewonnen %} <span class="sterren">★{{ p.gewonnen }}</span>{% endif %}{% if p.computer %} <small>computer</small>{% endif %}</figcaption>
-  </figure>
-  {% endfor %}
+  </figcaption>
+  {% endif %}
+</figure>
+{%- endmacro %}
+
+{# Een rij spelerskaarten, altijd naast elkaar (met 5 of 6 worden ze kleiner). #}
+{% macro rij(kaarten) -%}
+<div class="tafel-kaarten{% if kaarten|length > 3 %} veel{% endif %}" style="--kolommen: {{ kaarten|length }}">
+  {% for p in kaarten %}{{ speler(p) }}{% endfor %}
 </div>
+{%- endmacro %}

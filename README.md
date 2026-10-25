@@ -3,7 +3,7 @@
 Webversie van het Nederlandse kaartspel **Pesten** (Python + Flask). Alle code en uitleg
 staan in `pesten_spel.ipynb`.
 
-Eerst meld je je aan met je e-mailadres en naam, en kies je de spelvorm, het aantal
+Eerst meld je je aan met je e-mailadres, naam en avatar (man of vrouw), en kies je de spelvorm, het aantal
 computerspelers en het niveau (makkelijk, normaal, moeilijk). Achter het tandwiel (⚙)
 staan het aantal startkaarten, de spelregels (welke pestkaarten meedoen) en de
 **assistent**: tips tijdens het spel, in elk spel en op elk niveau. Alles wordt bij je
@@ -31,7 +31,8 @@ Na een wijziging in het notebook, de templates of de CSS: opnieuw `docker compos
 
 ## Aanpassen
 - Spelregels, aantal strafkaarten, computerspelers, niveaus: sectie 2 van het notebook.
-- Kleuren: `static/kleuren.css` (het WAGO-palet); `static/spel.css` bevat alleen de opmaak.
+- Kleuren: `static/kleuren.css` (groen vilt en goud, het ontwerp van versie 2); `static/spel.css` bevat alleen de opmaak.
+- Kaarten en avatars: `static/kaarten/`, `static/avatars/`; herkomst en licenties in `static/BRONNEN.md`.
 - Beeld en geluid: `static/beeld.js`.
 
 ## Naar de Raspberry Pi

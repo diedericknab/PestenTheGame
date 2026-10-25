@@ -1,8 +1,12 @@
 {% extends "basis.html" %}
+{% from "tafelkaarten.html" import rij %}
 {% block inhoud %}
 {# ---------- WACHTKAMER (online, voor het spel begint) ---------- #}
-{# Wie er al is, als spelerskaart: zet je camera aan, dan zie je elkaar hier al. #}
-{% with kaarten = w.tafel %}{% include "tafelkaarten.html" %}{% endwith %}
+{# Wie er al is, als spelerskaart: bel je, dan zie je elkaar hier al. #}
+<div class="wachtkamer-tafel">
+  {{ rij(w.tafel) }}
+  {% include "beeld.html" %}
+</div>
 
 <section class="paneel wachtkamer">
   <p class="bovenschrift">Wachtkamer</p>
@@ -58,12 +62,10 @@
   </details>
 </section>
 
-{# Tandwiel in de kop (zie basis.html) #}
+{# Settings in de kop (zie basis.html) #}
 <dialog id="spelmenu" class="venster menu">
   <h3>Menu</h3>
-  <form method="post" action="{{ url_for('stoppen') }}">
-    <button class="knop" type="submit">Wachtkamer verlaten</button>
-  </form>
+  <p class="uitleg">Spelcode <b class="code">{{ spel.code }}</b>. Met <b>Stop</b> verlaat je de wachtkamer.</p>
   <form method="post" action="{{ url_for('afmelden') }}">
     <button class="knop secundair" type="submit">Afmelden</button>
   </form>

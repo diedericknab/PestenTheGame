@@ -118,9 +118,11 @@ instellingen van de Pi staan dan in `.env.pi` in de bronmap; wijzig ze daar, nie
 ## 3. Het spel spelen
 
 ### Scherm 1: aanmelden en instellingen
-1. Vul je **e-mailadres** en je **naam** in (die zien de andere spelers). Ben je al eerder
-   aangemeld, dan komen je naam en instellingen vanzelf terug zodra je je e-mailadres hebt
-   ingevuld, met hoeveel rondes je hebt gespeeld en gewonnen.
+1. Vul je **e-mailadres** en je **naam** in (die zien de andere spelers) en kies je
+   **avatar**: **man** of **vrouw**. Die keuze is verplicht; de avatar komt in je cirkel aan
+   tafel. Ben je al eerder aangemeld, dan komen je naam, avatar en instellingen vanzelf terug
+   zodra je je e-mailadres hebt ingevuld, met hoeveel rondes je hebt gespeeld en gewonnen.
+   Speelde je al vóór versie 2, dan kies je de eerste keer nog je avatar.
 2. Kies de **spelvorm**:
    - **Alleen tegen de computer**.
    - **Online**: iedereen speelt op een eigen telefoon, tablet of computer (zie *Online spelen*
@@ -153,17 +155,18 @@ instellingen van de Pi staan dan in `.env.pi` in de bronmap; wijzig ze daar, nie
    Er kunnen maximaal **6 spelers** aan tafel, mensen en computers samen. Met veel spelers
    krijgt iedereen zo nodig wat minder startkaarten, zodat het in één pak past.
 4. Iedereen ziet alleen zijn eigen kaarten. De pagina ververst vanzelf als een ander een
-   zet doet. Elke speler kan de **assistent** voor zichzelf aanzetten (achter het tandwiel),
+   zet doet. Elke speler kan de **assistent** voor zichzelf aanzetten (achter **Settings**),
    handig voor beginners; de tips ziet alleen die speler.
-5. Ga je weg (**Spel verlaten** achter het tandwiel), dan speelt een computer verder met je
+5. Ga je weg (**Stop** rechtsboven), dan speelt een computer verder met je
    kaarten. Meedoen kan alleen zolang het spel in de wachtkamer staat; ben je per ongeluk
    weg, doe dan met hetzelfde e-mailadres opnieuw mee en je krijgt je plaats terug.
 
 ### Beeld en geluid
-In een online spel staat bovenaan **Camera en microfoon aan**. Wie dat aanzet, ziet en hoort
-iedereen die het ook aan heeft. Het beeld komt in de **spelerskaart** van die speler (in plaats
-van de twee letters), dus er is geen aparte balk met beelden en je hoeft niet te scrollen. Daarna kun je de microfoon of camera even uitzetten, of
-**Ophangen**. Op een iPhone of iPad vraagt Safari eerst om toestemming.
+In een online spel staat rechtsboven de tafel de ronde knop **Bellen**. Wie daarop drukt, ziet
+en hoort iedereen die ook belt. Het camerabeeld komt in de **cirkel** van die speler, in plaats
+van de avatar. Tijdens het gesprek staan er drie knoppen: **Microfoon** en **Camera** (even uit
+en weer aan; uit is doorgestreept) en **Ophangen**. Op een iPhone of iPad vraagt Safari eerst
+om toestemming.
 
 - Het beeld en geluid gaan rechtstreeks tussen de apparaten (WebRTC), niet via de Pi. Om
   elkaar via internet te vinden, gebruiken de browsers een openbare STUN-server van Google;
@@ -178,22 +181,22 @@ van de twee letters), dus er is geen aparte balk met beelden en je hoeft niet te
   verbinding niet. Daarvoor is een TURN-server nodig; die zit er (nog) niet in.
 
 ### Scherm 2: het spel
-- Bovenaan staat voor elke speler een **spelerskaart**, in de volgorde waarin gespeeld wordt
-  (jij eerst). Op de kaart staan de eerste twee letters van de naam, of het camerabeeld als
-  die speler de camera aan heeft. Het getal in de cirkel is het aantal kaarten (rood: nog
-  één kaart). Wie aan de beurt is, heeft een groene kaart. Alle spelers
-  staan in één rij, ook met 6 spelers op een telefoon.
-- In het midden liggen de
-  **trekstapel** en de **open stapel**, onderaan jouw hand. Heb je veel kaarten, dan schuiven
-  ze over elkaar (de hoek met de waarde blijft te zien), zodat ze in één rij passen. Op een
-  iPhone past zo alles in één scherm.
-- Ben je aan de beurt, dan komen de kaarten die je mag leggen omhoog, met een groene rand. Klik op een kaart om hem
+- Bovenaan staan de **andere spelers**, in de volgorde waarin gespeeld wordt: een cirkel met
+  hun avatar (of hun camerabeeld) en daaronder een naambord met het aantal kaarten (rood: nog
+  één kaart). Wie aan de beurt is, krijgt een gele **zandloper**. Alle spelers staan in één rij,
+  ook met 6 spelers op een telefoon. De computers Anna en Dewi hebben de vrouw-avatar, Bram, Cor
+  en Emre de man-avatar.
+- In het midden staat de ovale **tafel** met de **trekstapel** en de **open stapel**. Onderaan
+  staat jouw avatar met je hand. De kaarten liggen half over elkaar (de hoek met de waarde
+  blijft te zien); met veel kaarten schuiven ze verder over elkaar. Op een iPhone past zo
+  alles in één scherm.
+- Ben je aan de beurt, dan komen de kaarten die je mag leggen omhoog, met een gele rand. Klik op een kaart om hem
   te leggen. Bij een **boer** kies je daarna een kleur.
 - Kun of wil je niets leggen, klik dan op de trekstapel (**Pak**). Past de gepakte kaart,
   dan mag je hem leggen of op **Pas** klikken. Past hij niet, dan ben je klaar.
 - Moet je kaarten pakken door een 2 of joker, dan staat er **+2** (of meer) op tafel en op
   de trekstapel **Pak 2**. Met de regel *stapelen* mag je er ook een 2 of joker op leggen.
-- Hou je na je zet nog één kaart over, vink dan eerst **Laatste kaart!** aan en leg daarna
+- Hou je na je zet nog één kaart over, vink dan eerst **Laatste kaart** aan (rechtsonder je hand) en leg daarna
   je kaart. Vergeet je dat, dan pak je 2 strafkaarten.
 - De computers doen hun zet met een korte pauze, zodat je ziet wat er gebeurt. Onderaan
   staat het logboek met de laatste zetten.
@@ -201,8 +204,8 @@ van de twee letters), dus er is geen aparte balk met beelden en je hoeft niet te
   kaarten van de anderen bekijken. **Volgende ronde** deelt opnieuw; elke ronde begint de
   volgende speler.
 
-Rechtsboven staat het **tandwiel (⚙)**: assistent aan/uit (in elk spel),
-**Nieuw spel / instellingen** (online: **Spel verlaten**) en **Afmelden**.
+Rechtsboven staan twee ronde knoppen: **Settings** (assistent aan/uit, de spelcode en
+**Afmelden**) en **Stop**: tegen de computer terug naar de instellingen, online het spel verlaten.
 
 ### De spelregels
 
@@ -226,7 +229,7 @@ kaarten (behalve de bovenste) geschud en de nieuwe trekstapel.
 
 ### De assistent
 Staat de assistent aan (in elk spel en op elk niveau), dan staat er tijdens je beurt een tip boven je hand: welke kaart je het best kunt leggen
-en waarom. Die kaart krijgt een donkerblauwe rand met "tip".
+en waarom. Die kaart krijgt een lichtblauwe rand met "tip".
 Bij een boer licht ook de aangeraden kleur op, en met nog twee kaarten herinnert de
 assistent je aan **Laatste kaart!**. De assistent denkt zoals de computer op niveau moeilijk.
 
@@ -258,11 +261,15 @@ In Jupyter komt de database in `database/pesten.db` naast het notebook.
 
 | Wat                                | Waar                                                |
 | ---------------------------------- | --------------------------------------------------- |
-| Kleuren (het WAGO-palet)           | `static/kleuren.css`                                |
+| Kleuren (groen vilt, goud)         | `static/kleuren.css`                                |
 | Opmaak (indeling, groottes van de kaarten) | `static/spel.css` (`--kaart-b` is de breedte van een kaart) |
-| Animaties (kaart neerleggen, pakken) | `static/spel.css` (zoek op `@keyframes`)          |
-| Lettertype (Lilita One)            | `templates/basis.html` (Google Fonts) en `static/spel.css` |
-| Teksten en indeling van de pagina  | `templates/aanmelden.html`, `templates/spel.html`, `templates/basis.html` |
+| Animaties (kaart neerleggen, zandloper) | `static/spel.css` (zoek op `@keyframes`)       |
+| Lettertypen (Roboto Slab, Bree Serif, Atkinson Hyperlegible) | `templates/basis.html` (Google Fonts) en `static/spel.css` |
+| Teksten en indeling van de pagina  | `templates/aanmelden.html`, `wachtkamer.html`, `spel.html`, `basis.html` |
+| Spelerskaarten (avatar, naambord)  | `templates/tafelkaarten.html`                       |
+| Iconen (Settings, Stop, Bellen)    | `templates/iconen.html`                             |
+| Afbeeldingen van de kaarten        | `static/kaarten/` (herkomst en licenties: `static/BRONNEN.md`) |
+| Avatars (man, vrouw)               | `static/avatars/` en `COMPUTER_AVATARS` in sectie 2 |
 | Spelregels en hun teksten          | Sectie 2 van het notebook (`REGELS`)                |
 | Aantal kaarten bij 2, joker en vergeten "Laatste kaart!" | Sectie 2 (`TWEE_PAKKEN`, `JOKER_PAKKEN`, `STRAF_LAATSTE_KAART`) |
 | Namen en niveaus van de computers  | Sectie 2 (`COMPUTER_NAMEN`, `NIVEAUS`, `VERGEET_KANS`) |
@@ -302,7 +309,7 @@ De database is één SQLite-bestand: `/app/database/pesten.db` in de container. 
 | ----- | ------ |
 | `email` | Het e-mailadres (kleine letters), uniek |
 | `naam` | De naam die de andere spelers zien (maximaal 20 tekens) |
-| `instellingen` | De instellingen van het eerste scherm, als JSON |
+| `instellingen` | De instellingen van het eerste scherm, als JSON (ook `geslacht`: de avatar) |
 | `gespeeld`, `gewonnen` | Aantal gespeelde en gewonnen rondes |
 | `aangemaakt`, `bijgewerkt` | Datum en tijd |
 
@@ -420,12 +427,13 @@ toegestaan adres kent, kan daarmee spelen en ziet de naam, instellingen en score
 | Browser meldt "certificaat niet vertrouwd" / "verbinding is niet privé" | Je gebruikt een IP-adres: installeer het hoofdcertificaat van Caddy (hoofdstuk 6). Met een domeinnaam: kijk in `docker logs pesten-caddy` of het certificaat is aangevraagd (poort 80 en 443 moeten van buiten bereikbaar zijn). |
 | Geen verbinding via `https://<ip>` | Controleer of `SPEL_ADRES` in `.env` precies het adres is dat je in de browser typt. Na een wijziging: `docker compose up -d`. |
 | Na **Start spel** steeds terug op het eerste scherm | Je opent het spel via `http://` zonder Caddy (het cookie werkt alleen over https). Gebruik `https://<SPEL_ADRES>`. |
-| Melding "Te veel kaarten" | Met veel tegenstanders en veel startkaarten past het niet in één pak. Kies minder tegenstanders of minder startkaarten (achter het tandwiel). |
+| Melding "Te veel kaarten" | Met veel tegenstanders en veel startkaarten past het niet in één pak. Kies minder tegenstanders of minder startkaarten (achter het tandwiel op het eerste scherm). |
 | Melding "heeft geen toegang tot dit spel" | Het adres staat niet in `TOEGESTANE_EMAILS` in `.env`. Voeg het toe en start opnieuw met `docker compose up -d` (hoofdstuk 6). |
 | Melding "is geen geldig e-mailadres" | Controleer het e-mailadres (bijvoorbeeld een spatie of een ontbrekende `@`). |
 | Een kaart licht niet op | Die kaart past niet. Klik je er toch op (zonder JavaScript), dan zegt de melding waarom. |
 | De computers doen niets | JavaScript staat uit of de verbinding is weg; ververs de pagina. Staat er een venster open (⚙ of kleur kiezen), dan wachten de computers tot je het sluit. |
-| Geen assistent te zien | Je ziet hem alleen als je aan de beurt bent. Zet hem aan achter het tandwiel. |
+| Geen assistent te zien | Je ziet hem alleen als je aan de beurt bent. Zet hem aan achter **Settings**. |
+| Melding "Kies je avatar: man of vrouw" | Kies op het eerste scherm onder **Avatar** man of vrouw. Dat moet één keer, ook als je al eerder speelde. |
 | "Er is geen spel met de code ..." | Controleer de code. Na een herstart van de server zijn alle lopende spellen weg: maak een nieuw spel. |
 | "Dit spel is al begonnen" | Meedoen kan alleen in de wachtkamer. Wie al meedeed, komt met hetzelfde e-mailadres wel terug op zijn plaats. |
 | Camera: "werken alleen via https" | Open het spel via `https://` met een vertrouwd certificaat (hoofdstuk 6). Op een iPhone met een IP-adres: installeer het hoofdcertificaat van Caddy. |

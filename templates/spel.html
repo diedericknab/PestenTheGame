@@ -1,8 +1,12 @@
 {% extends "basis.html" %}
 
-{# Eén speelkaart. Met `knop` wordt het een knop om de kaart te spelen. #}
+{% from "tafelkaarten.html" import speler, rij %}
+
+{# Eén speelkaart: een afbeelding uit static/kaarten (zie static/BRONNEN.md).
+   Met `knop` wordt het een knop om de kaart te spelen. #}
 {% macro kaart(k, extra="", knop=False) -%}
-{% set klassen = "kaart " ~ ("rood" if k.rood else "zwart") ~ (" joker" if k.joker else "") ~ " " ~ extra %}
+{% set klassen = "kaart " ~ extra %}
+{% set plaatje = url_for('static', filename='kaarten/' ~ ('X' if k.joker else k.code) ~ '.svg') %}
 {% if knop %}
   {% if k.boer and k.speelbaar %}
 <button type="button" class="{{ klassen }}" data-boer="{{ k.code }}" aria-label="{{ k.naam }} spelen (kies een kleur)">
@@ -13,24 +17,17 @@
 {% else %}
 <div class="{{ klassen }}" aria-label="{{ k.naam }}" role="img" data-code="{{ k.code }}">
 {% endif %}
-  {% if k.joker %}
-  <span class="hoek boven" aria-hidden="true">★</span>
-  <span class="midden" aria-hidden="true"><span class="joker-ster">★</span><span class="joker-tekst">JOKER</span></span>
-  <span class="hoek onder" aria-hidden="true">★</span>
-  {% else %}
-  <span class="hoek boven" aria-hidden="true">{{ k.waarde }}<br>{{ k.symbool }}</span>
-  <span class="midden {% if k.plaatje %}plaatje{% endif %}" aria-hidden="true">{% if k.plaatje %}{{ k.waarde }}{% endif %}<span>{{ k.symbool }}</span></span>
-  <span class="hoek onder" aria-hidden="true">{{ k.waarde }}<br>{{ k.symbool }}</span>
-  {% endif %}
+  <img src="{{ plaatje }}" alt="" draggable="false">
 {% if knop %}</button>{% else %}</div>{% endif %}
 {%- endmacro %}
 
 {% block inhoud %}
 {% set w = weergave %}
+{% set ik = w.tafel|selectattr("ik")|first %}
 <section class="tafel">
 
-  {# ---------- SPELERSKAARTEN (met camerabeeld als dat aan staat) ---------- #}
-  {% with kaarten = w.tafel %}{% include "tafelkaarten.html" %}{% endwith %}
+  {# ---------- TEGENSTANDERS (avatar of camerabeeld, naam en aantal kaarten) ---------- #}
+  {{ rij(w.tafel|rejectattr("ik")|list) }}
 
   {# Einde van de ronde: de kaarten die de anderen nog hadden. #}
   {% if w.klaar %}
@@ -44,64 +41,68 @@
   </div>
   {% endif %}
 
-  {# ---------- MIDDEN: stapels ---------- #}
-  <div class="midden-tafel">
-    <form method="post" action="{{ url_for('pak_route') }}" class="trekstapel">
-      <button class="rug stapel {% if w.kan_pakken %}kan{% endif %}" type="submit" {% if not w.kan_pakken %}disabled{% endif %}
-              aria-label="Pak {{ w.te_pakken if w.te_pakken else 'een' }} kaart{{ 'en' if w.te_pakken > 1 }}">
-        <span class="stapel-tekst">{% if w.kan_pakken %}{% if w.te_pakken %}Pak {{ w.te_pakken }}{% else %}Pak{% endif %}{% endif %}</span>
-      </button>
-      <small class="plek">Stapel · {{ w.trekstapel }}</small>
-    </form>
+  {# ---------- DE TAFEL: trekstapel en open stapel op het groene vilt ---------- #}
+  <div class="speeltafel">
+    {% include "beeld.html" %}
+    <div class="vilt">
+      <form method="post" action="{{ url_for('pak_route') }}" class="trekstapel">
+        <button class="rug stapel {% if w.kan_pakken %}kan{% endif %}" type="submit" {% if not w.kan_pakken %}disabled{% endif %}
+                aria-label="Pak {{ w.te_pakken if w.te_pakken else 'een' }} kaart{{ 'en' if w.te_pakken > 1 }}">
+          <span class="stapel-tekst">{% if w.kan_pakken %}{% if w.te_pakken %}Pak {{ w.te_pakken }}{% else %}Pak{% endif %}{% endif %}</span>
+        </button>
+        <small class="plek">Stapel ({{ w.trekstapel }})</small>
+      </form>
 
-    <div class="afleg-plek">
-      <div class="aflegstapel" aria-label="Open stapel">
-        {% for k in w.open %}{{ kaart(k, "gelegd" ~ (" bovenste" if loop.last else "") ~ " l" ~ (w.open|length - loop.index)) }}{% endfor %}
+      <div class="afleg-plek">
+        <div class="aflegstapel" aria-label="Open stapel">
+          {% for k in w.open %}{{ kaart(k, "gelegd" ~ (" bovenste" if loop.last else "") ~ " l" ~ (w.open|length - loop.index)) }}{% endfor %}
+        </div>
       </div>
-      <small class="plek">Open</small>
-    </div>
 
-    <div class="tafel-info">
-      <div class="richting {% if w.richting < 0 %}tegen{% endif %}" title="Speelrichting">
-        <span aria-hidden="true">{{ "↻" if w.richting > 0 else "↺" }}</span><small>{{ "met de klok mee" if w.richting > 0 else "tegen de klok in" }}</small>
+      <div class="tafel-info">
+        <div class="richting {% if w.richting < 0 %}tegen{% endif %}" title="{{ 'Met de klok mee' if w.richting > 0 else 'Tegen de klok in' }}">
+          <span aria-hidden="true">{{ "↻" if w.richting > 0 else "↺" }}</span>
+        </div>
+        {% if w.kleur_anders or not w.kleur %}
+        <div class="gevraagde-kleur {% if w.kleur in ('H', 'R') %}rood{% endif %}">
+          {% if w.kleur %}<b>{{ symbolen[w.kleur] }}</b> {{ kleuren[w.kleur] }}{% else %}Alles mag{% endif %}
+        </div>
+        {% endif %}
+        {% if w.te_pakken %}<div class="te-pakken">+{{ w.te_pakken }}</div>{% endif %}
       </div>
-      {% if w.kleur_anders or not w.kleur %}
-      <div class="gevraagde-kleur {% if w.kleur in ('H', 'R') %}rood{% endif %}">
-        {% if w.kleur %}Kleur: <b>{{ symbolen[w.kleur] }}</b> {{ kleuren[w.kleur] }}{% else %}Alles mag{% endif %}
-      </div>
-      {% endif %}
-      {% if w.te_pakken %}<div class="te-pakken">+{{ w.te_pakken }}</div>{% endif %}
     </div>
   </div>
 
-  {# Alleen als er iets uit te leggen is; wie er aan de beurt is, zie je aan de spelerskaarten. #}
+  {# Alleen als er iets uit te leggen is; wie er aan de beurt is, zie je aan de zandloper. #}
   <div class="status {% if w.ik.beurt %}jij{% endif %}" role="status"{% if not w.status %} hidden{% endif %}>{{ w.status }}</div>
 
+  {# ---------- TIPS (boven je hand) ---------- #}
   {% if w.advies %}
-  <div class="assistent" role="note"><span class="assistent-label">Tip</span>
-    <span>{{ w.advies.tekst }}</span></div>
+  <div class="assistent" role="note"><h2 class="assistent-label">Tips</h2>
+    <p>{{ w.advies.tekst }}</p></div>
   {% endif %}
 
-  {# ---------- JOUW HAND ---------- #}
-  <form method="post" action="{{ url_for('speel') }}" id="mijn-hand" class="mijn-hand {% if w.ik.beurt %}aan-zet{% endif %}">
-    <div class="hand-kop">
-      <span class="stoel-naam">{{ w.ik.naam }} (jij){% if w.ik.gewonnen %} <span class="sterren">★{{ w.ik.gewonnen }}</span>{% endif %}</span>
-      <span class="hand-knoppen">
-        {% if w.laatste_kaart_regel and not w.klaar %}
-        <label class="laatste-knop" title="Meld dit bij de kaart waarna je er nog één over hebt">
-          <input type="checkbox" name="laatste" value="1"> Laatste kaart!
-        </label>
-        {% endif %}
+  {# ---------- JOUW PLEK: je avatar en je hand ---------- #}
+  <div class="mijn-plek">
+    {{ speler(ik, bord=False) }}
+    <form method="post" action="{{ url_for('speel') }}" id="mijn-hand" class="mijn-hand {% if w.ik.beurt %}aan-zet{% endif %}">
+      <div class="hand-kop">
+        <span class="stoel-naam">{{ w.ik.naam }} (jij){% if w.ik.gewonnen %} <span class="sterren">★{{ w.ik.gewonnen }}</span>{% endif %}</span>
         {% if w.kan_passen %}
-        <button class="knop klein secundair" type="submit" formaction="{{ url_for('pas_route') }}">Pas</button>
+        <button class="knop klein" type="submit" formaction="{{ url_for('pas_route') }}">Pas</button>
         {% endif %}
-      </span>
-    </div>
-    {# --n: het aantal kaarten; met veel kaarten schuiven ze over elkaar, zodat ze in één rij passen. #}
-    <div class="hand" style="--n: {{ w.hand|length }}">
-      {% for k in w.hand %}{{ kaart(k, ("speelbaar" if k.speelbaar else "") ~ (" nieuw" if k.nieuw else "") ~ (" tip" if k.tip else ""), knop=True) }}{% endfor %}
-    </div>
-  </form>
+      </div>
+      {# --n: het aantal kaarten; ze liggen half over elkaar, met veel kaarten nog verder. #}
+      <div class="hand" style="--n: {{ w.hand|length }}">
+        {% for k in w.hand %}{{ kaart(k, ("speelbaar" if k.speelbaar else "") ~ (" nieuw" if k.nieuw else "") ~ (" tip" if k.tip else ""), knop=True) }}{% endfor %}
+      </div>
+      {% if w.laatste_kaart_regel and not w.klaar %}
+      <label class="laatste-knop" title="Meld dit bij de kaart waarna je er nog één over hebt">
+        <input type="checkbox" name="laatste" value="1"> Laatste kaart
+      </label>
+      {% endif %}
+    </form>
+  </div>
 
   {# ---------- LOGBOEK ---------- #}
   <ol class="logboek" aria-label="Wat er gebeurde">
@@ -116,21 +117,14 @@
 </form>
 {% endif %}
 
-{# Tandwiel in de kop (zie basis.html) #}
+{# Settings in de kop (zie basis.html) #}
 <dialog id="spelmenu" class="venster menu">
   <h3>Menu</h3>
   {% if spel.online %}<p class="uitleg">Spelcode <b class="code">{{ spel.code }}</b></p>{% endif %}
   <form method="post" action="{{ url_for('assistent') }}">
     <button class="knop" type="submit">Assistent {{ "uitzetten" if assistent_aan else "aanzetten" }}</button>
   </form>
-  <form method="post" action="{{ url_for('stoppen') }}">
-    {% if spel.online %}
-    <button class="knop" type="submit">Spel verlaten</button>
-    <small class="uitleg">Een computer speelt verder met je kaarten.</small>
-    {% else %}
-    <button class="knop" type="submit">Nieuw spel / instellingen</button>
-    {% endif %}
-  </form>
+  <p class="uitleg">{% if spel.online %}Met <b>Stop</b> verlaat je het spel; een computer speelt verder met je kaarten.{% else %}Met <b>Stop</b> ga je terug naar de instellingen.{% endif %}</p>
   <form method="post" action="{{ url_for('afmelden') }}">
     <button class="knop secundair" type="submit">Afmelden</button>
   </form>

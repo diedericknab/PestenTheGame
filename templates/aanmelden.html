@@ -20,6 +20,18 @@
         <input type="text" name="naam" value="{{ naam_tekst }}" required maxlength="{{ max_naam }}"
                autocomplete="nickname">
       </label>
+      {# Verplicht: welke avatar je krijgt in je spelerskaart. #}
+      <div class="geslacht-keuze" role="radiogroup" aria-label="Avatar">
+        <span class="geslacht-titel">Avatar</span>
+        {% for sleutel, tekst in geslachten.items() %}
+        <label class="geslacht">
+          <input type="radio" name="geslacht" value="{{ sleutel }}" required
+                 {% if sleutel == instellingen.geslacht %}checked{% endif %}>
+          <img src="{{ url_for('static', filename='avatars/' ~ sleutel ~ '.svg') }}" alt="" draggable="false">
+          <span>{{ tekst }}</span>
+        </label>
+        {% endfor %}
+      </div>
       <p class="uitleg" id="speler-uitleg">
         {% if speler %}Gespeeld: {{ speler.gespeeld }} rondes, gewonnen: {{ speler.gewonnen }}.
         {% else %}Ben je al eerder aangemeld, dan komen je naam en instellingen terug zodra je je e-mailadres hebt ingevuld.{% endif %}
@@ -139,6 +151,10 @@
         veld.checked = Boolean(instellingen.regels[veld.value]);
       }
       formulier.elements.assistent.checked = Boolean(instellingen.assistent);
+      // Nog geen avatar gekozen (een speler van voor versie 2): dan moet je hem eerst kiezen.
+      for (const veld of formulier.querySelectorAll("[name=geslacht]")) {
+        veld.checked = veld.value === instellingen.geslacht;
+      }
       bijwerken();
     }
 
@@ -189,8 +205,9 @@
           uitleg.textContent = `Welkom terug! Gespeeld: ${gegevens.gespeeld} rondes, gewonnen: ${gegevens.gewonnen}. Je instellingen staan klaar.`;
         } else if (gegevens.geen_toegang) {
           uitleg.textContent = "Dit e-mailadres heeft geen toegang tot dit spel. Vraag de beheerder om je toe te voegen.";
+          if (!gegevens.instellingen.geslacht) uitleg.textContent += " Kies nog wel je avatar: man of vrouw.";
         } else {
-          uitleg.textContent = "Nieuw e-mailadres: vul je naam in en kies je instellingen.";
+          uitleg.textContent = "Nieuw e-mailadres: vul je naam in, kies je avatar en je instellingen.";
         }
       } catch (fout) {
         laatsteEmail = "";

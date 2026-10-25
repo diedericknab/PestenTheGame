@@ -158,8 +158,11 @@
     knoppen.microfoon.hidden = knoppen.camera.hidden = knoppen.uit.hidden = !aan;
     if (!aan) return;
     const geluid = stroom.getAudioTracks()[0], beeld = stroom.getVideoTracks()[0];
-    knoppen.microfoon.textContent = geluid && geluid.enabled ? "Microfoon uit" : "Microfoon aan";
-    knoppen.camera.textContent = beeld && beeld.enabled ? "Camera uit" : "Camera aan";
+    // Staat de microfoon of camera even uit, dan krijgt de knop de klasse "uit" (doorgestreept icoon).
+    knoppen.microfoon.classList.toggle("uit", !(geluid && geluid.enabled));
+    knoppen.camera.classList.toggle("uit", !(beeld && beeld.enabled));
+    knoppen.microfoon.setAttribute("aria-pressed", String(Boolean(geluid && geluid.enabled)));
+    knoppen.camera.setAttribute("aria-pressed", String(Boolean(beeld && beeld.enabled)));
     blok.classList.toggle("actief", aan);
   }
 
