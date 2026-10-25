@@ -20,7 +20,7 @@
   const blok = document.getElementById("beeld");
   if (!blok || window.pestenBeeld) return;
   const voorraad = blok.querySelector(".voorraad");
-  const melding = blok.querySelector(".beeld-melding");
+  const venster = blok.querySelector("#bel-venster");
   const knoppen = {};
   for (const knop of blok.querySelectorAll("[data-beeld]")) knoppen[knop.dataset.beeld] = knop;
 
@@ -31,7 +31,47 @@
   const verbindingen = new Map();   // id -> { pc, sinds }
   const videos = new Map();         // id -> <video> ("ik" = je eigen beeld)
 
-  function zeg(tekst) { melding.textContent = tekst || ""; }
+  // Het venster bij Bellen: eerst de uitleg over de toestemming, bij een probleem wat er mis
+  // is en wat je kunt doen. [titel, tekst, tekst op de knop (geen knop: alleen Sluiten)]
+  const TEKSTEN = {
+    vraag: ["Bellen", "Je browser vraagt zo of dit spel je camera en microfoon mag gebruiken. " +
+      "Kies dan Toestaan. Daarna zien en horen de anderen je, in je eigen cirkel.", "Verder"],
+    geblokkeerd: ["Camera en microfoon geblokkeerd", "Je browser blokkeert de camera en microfoon " +
+      "voor dit spel, daarom komt er geen vraag om toestemming. Klik in de adresbalk op het slotje " +
+      "(of het camera-icoon), zet Camera en Microfoon op Toestaan en ververs de pagina. Op een " +
+      "iPhone: Instellingen → Safari → Camera en Microfoon."],
+    geen: ["Geen camera of microfoon", "Er is op dit apparaat geen camera of microfoon gevonden. " +
+      "Sluit er een aan of zet hem aan, en probeer het opnieuw.", "Opnieuw proberen"],
+    bezet: ["Camera of microfoon in gebruik", "De camera of microfoon wordt al gebruikt door een " +
+      "ander programma of een andere tab, bijvoorbeeld Teams of Zoom. Sluit dat en probeer het opnieuw.",
+      "Opnieuw proberen"],
+    https: ["Bellen lukt hier niet", "Beeld en geluid werken alleen via https, in een recente browser."],
+    anders: ["Bellen lukt niet", "Er ging iets mis met de camera of microfoon. Probeer het opnieuw, " +
+      "of gebruik een andere browser.", "Opnieuw proberen"],
+  };
+  function toonVenster(soort, extra) {
+    const [titel, tekst, knop] = TEKSTEN[soort];
+    venster.querySelector(".bel-titel").textContent = titel;
+    venster.querySelector(".bel-tekst").textContent = tekst + (extra ? ` (${extra})` : "");
+    const verder = venster.querySelector("[data-beeld=verder]");
+    verder.hidden = !knop;
+    verder.textContent = knop || "";
+    venster.querySelector("[data-sluit]").textContent = knop ? "Annuleren" : "Sluiten";
+    if (!venster.open) venster.showModal();
+  }
+
+  // Heeft de browser de camera of microfoon al geblokkeerd? (Niet elke browser kan dat zeggen.)
+  async function geblokkeerd() {
+    if (!navigator.permissions) return false;
+    for (const naam of ["camera", "microphone"]) {
+      try {
+        if ((await navigator.permissions.query({ name: naam })).state === "denied") return true;
+      } catch (fout) {
+        // Deze browser kent deze vraag niet: dan merken we het bij getUserMedia.
+      }
+    }
+    return false;
+  }
 
   async function post(pad, gegevens) {
     const antwoord = await fetch("/beeld/" + pad, {
@@ -143,8 +183,6 @@
         if (!verbindingen.has(id) && ik < id) bel(id, naam);
       }
       for (const id of [...verbindingen.keys()]) if (!namen.has(id)) weg(id);
-      const anderen = namen.size - 1;
-      zeg(anderen ? "" : "Nog niemand anders heeft de camera aan.");
     } catch (fout) {
       // Even geen verbinding met de server: de volgende keer opnieuw.
     } finally {
@@ -166,25 +204,29 @@
     blok.classList.toggle("actief", aan);
   }
 
+  // Bellen: altijd eerst het venster met uitleg; met Verder vraagt de browser om toestemming.
+  async function bellen() {
+    if (!navigator.mediaDevices || !window.RTCPeerConnection) toonVenster("https");
+    else if (await geblokkeerd()) toonVenster("geblokkeerd");
+    else toonVenster("vraag");
+  }
+
   async function aan() {
-    if (!navigator.mediaDevices || !window.RTCPeerConnection) {
-      zeg("Beeld en geluid werken alleen via https, in een recente browser.");
-      return;
-    }
-    zeg("Even toestemming geven voor camera en microfoon…");
+    venster.close();
     try {
       stroom = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } },
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       });
     } catch (fout) {
-      zeg("Geen toegang tot camera of microfoon. Sta het toe in de instellingen van je browser.");
+      const soort = { NotAllowedError: "geblokkeerd", SecurityError: "geblokkeerd", NotFoundError: "geen",
+                      OverconstrainedError: "geen", NotReadableError: "bezet", AbortError: "bezet" }[fout.name];
+      toonVenster(soort || "anders", soort ? "" : fout.name);
       return;
     }
     toon("ik", stroom, true);
     knoppenBijwerken();
     await post("aan");
-    zeg("Verbinden…");
     ophalen();
     timer = setInterval(ophalen, Number(blok.dataset.ververs) || 1000);
   }
@@ -201,7 +243,6 @@
     haalWeg("ik");
     blok.classList.remove("actief");
     knoppenBijwerken();
-    zeg("");
   }
 
   function wissel(soort) {
@@ -213,7 +254,8 @@
   blok.addEventListener("click", function (e) {
     const knop = e.target.closest("[data-beeld]");
     if (!knop) return;
-    if (knop.dataset.beeld === "aan") aan();
+    if (knop.dataset.beeld === "aan") bellen();
+    else if (knop.dataset.beeld === "verder") aan();
     else if (knop.dataset.beeld === "uit") uit();
     else wissel(knop.dataset.beeld);
   });

@@ -200,13 +200,13 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .regels-overzicht ul { margin: 8px 0 0; padding-left: 20px; color: var(--tekst-zacht); }
 
 /* ---------- beeld en geluid: Bellen, Microfoon, Camera, Ophangen ---------- */
-.beeld { display: flex; justify-content: flex-end; align-items: flex-end; gap: 10px; }
+.beeld { position: relative; display: flex; justify-content: flex-end; }
 .beeld-knoppen { display: flex; gap: 10px; }
-.beeld-melding {
-  color: var(--tekst-licht); font-size: .8rem; text-align: right; max-width: 220px;
-  text-shadow: 0 1px 2px var(--schaduw);
-}
-.beeld-melding:empty { display: none; }
+/* in het spel: rechtsboven op de rand van je eigen vak */
+.mijn-hand .beeld { position: absolute; top: -21px; right: 10px; z-index: 3; }
+.mijn-hand .beeld-knoppen { gap: 8px; }
+.mijn-hand .rond-knop { font-size: .7rem; text-shadow: 0 1px 2px var(--schaduw); }
+.mijn-hand .rond-knop .icoon { width: 38px; height: 38px; padding: 8px; }
 
 /* ---------- speelkaarten (afbeeldingen uit static/kaarten) ---------- */
 .kaart {
@@ -289,8 +289,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .waaier.open-hand { flex-wrap: wrap; gap: 3px; }
 
 /* de ovale speeltafel: licht groen vilt met een donkere rand en een dunne witte lijn */
-.speeltafel { position: relative; margin: 14px -10px 0; }
-.speeltafel .beeld { position: absolute; top: -30px; right: 14px; z-index: 2; }
+.speeltafel { position: relative; margin: 6px -10px 0; }
 .vilt {
   position: relative; display: grid; grid-template-columns: auto auto auto; justify-content: center; align-items: center;
   gap: 28px; padding: 22px 48px 18px; min-height: 170px;
@@ -371,9 +370,15 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .hand-kop { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 30px; }
 .hand-kop .stoel-naam { font-size: 1.1rem; }
 
-/* "Laatste kaart": een bruin label dat over de rechterbenedenhoek steekt */
+/* Rechtsonder over de rand van je vak: Pas (na het pakken) en "Laatste kaart" (bruin) */
+.hand-knoppen { position: absolute; right: -10px; bottom: -16px; display: flex; align-items: center; gap: 8px; }
+.pas-knop {
+  min-height: 34px; padding: 5px 18px; border: 0; border-radius: 999px; cursor: pointer;
+  background: var(--goud); color: var(--tekst-donker); font: 1rem/1 var(--label);
+  box-shadow: 0 2px 6px var(--schaduw); touch-action: manipulation;
+}
+.pas-knop:active { transform: translateY(1px); }
 .laatste-knop {
-  position: absolute; right: -10px; bottom: -16px;
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer; min-height: 34px;
   padding: 5px 14px 5px 10px; border-radius: 999px;
   background: var(--laatste-achtergrond); color: var(--laatste-tekst);
@@ -493,8 +498,7 @@ dialog.venster::backdrop { background: var(--overlay); }
   .tafel-kaarten.veel .naambord { padding: 13px 4px 4px; font-size: .74rem; justify-content: center; flex-direction: column; gap: 0; }
   .tafel-kaarten.veel .aantal { font-size: .85rem; }
   .tafel-kaarten.veel .rug-icoon { width: 9px; height: 13px; }
-  .speeltafel { margin: 10px -12px 0; }
-  .speeltafel .beeld { top: -24px; right: 16px; }
+  .speeltafel { margin: 4px -12px 0; }
   .vilt { gap: 16px; padding: 14px 26px 10px; min-height: 0; border-width: 12px; }
   .vilt::before { inset: 8px 12px; }
   .stapel, .aflegstapel .kaart { --kaart-b: 56px; }
@@ -512,7 +516,17 @@ dialog.venster::backdrop { background: var(--overlay); }
   .mijn-hand { padding: 6px 10px 20px; }
   .hand-kop .stoel-naam { font-size: 1rem; }
   .hand { padding-top: 10px; }
-  .laatste-knop { font-size: .9rem; min-height: 30px; padding: 4px 12px 4px 8px; bottom: -14px; right: -8px; }
+  .hand-knoppen { bottom: -14px; right: -8px; gap: 6px; }
+  .laatste-knop { font-size: .9rem; min-height: 30px; padding: 4px 12px 4px 8px; }
+  .pas-knop { font-size: .9rem; min-height: 30px; padding: 4px 14px; }
+  .mijn-hand .beeld { top: -19px; right: 8px; }
+  .mijn-hand .rond-knop .icoon { width: 34px; height: 34px; padding: 7px; }
+}
+
+/* smalle telefoon: de tip op één doorlopende regel, met "Tips" vooraan */
+@media (max-width: 380px) {
+  .assistent-label { display: inline; font-size: 1rem; margin-right: 6px; }
+  .assistent p { display: inline; font-size: .84rem; }
 }
 
 /* lage telefoon (iPhone SE met de balken van Safari): nog wat kleiner */

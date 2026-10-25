@@ -162,11 +162,13 @@ instellingen van de Pi staan dan in `.env.pi` in de bronmap; wijzig ze daar, nie
    weg, doe dan met hetzelfde e-mailadres opnieuw mee en je krijgt je plaats terug.
 
 ### Beeld en geluid
-In een online spel staat rechtsboven de tafel de ronde knop **Bellen**. Wie daarop drukt, ziet
+In een online spel staat rechtsboven op je eigen vak (bij je kaarten) de ronde knop **Bellen**. Wie daarop drukt, ziet
 en hoort iedereen die ook belt. Het camerabeeld komt in de **cirkel** van die speler, in plaats
 van de avatar. Tijdens het gesprek staan er drie knoppen: **Microfoon** en **Camera** (even uit
-en weer aan; uit is doorgestreept) en **Ophangen**. Op een iPhone of iPad vraagt Safari eerst
-om toestemming.
+en weer aan; uit is doorgestreept) en **Ophangen**. Bij **Bellen** verschijnt altijd eerst een
+venster: je browser vraagt zo om toestemming voor camera en microfoon, kies dan **Toestaan**.
+Lukt het niet, dan zegt hetzelfde venster wat er mis is (geblokkeerd, geen camera, of de camera
+is in gebruik door een ander programma) en wat je kunt doen.
 
 - Het beeld en geluid gaan rechtstreeks tussen de apparaten (WebRTC), niet via de Pi. Om
   elkaar via internet te vinden, gebruiken de browsers een openbare STUN-server van Google;
@@ -436,8 +438,10 @@ toegestaan adres kent, kan daarmee spelen en ziet de naam, instellingen en score
 | Melding "Kies je avatar: man of vrouw" | Kies op het eerste scherm onder **Avatar** man of vrouw. Dat moet één keer, ook als je al eerder speelde. |
 | "Er is geen spel met de code ..." | Controleer de code. Na een herstart van de server zijn alle lopende spellen weg: maak een nieuw spel. |
 | "Dit spel is al begonnen" | Meedoen kan alleen in de wachtkamer. Wie al meedeed, komt met hetzelfde e-mailadres wel terug op zijn plaats. |
-| Camera: "werken alleen via https" | Open het spel via `https://` met een vertrouwd certificaat (hoofdstuk 6). Op een iPhone met een IP-adres: installeer het hoofdcertificaat van Caddy. |
-| Camera: "Geen toegang tot camera of microfoon" | iPhone: Instellingen → Safari → Camera en Microfoon → Vraag of Sta toe. Ververs daarna de pagina. |
+| Camera: "Bellen lukt hier niet" (alleen via https) | Open het spel via `https://` met een vertrouwd certificaat (hoofdstuk 6). Op een iPhone met een IP-adres: installeer het hoofdcertificaat van Caddy. |
+| Camera: "Camera en microfoon geblokkeerd" (de browser vraagt niets) | Computer: klik in de adresbalk op het slotje of het camera-icoon, zet Camera en Microfoon op Toestaan en ververs de pagina. iPhone: Instellingen → Safari → Camera en Microfoon → Vraag of Sta toe. |
+| Camera: "Camera of microfoon in gebruik" | Een ander programma (Teams, Zoom) of een andere tab gebruikt de camera. Sluit dat en kies **Opnieuw proberen**. |
+| Camera: "Geen camera of microfoon" | Op deze computer is geen camera of microfoon gevonden. Sluit er een aan en kies **Opnieuw proberen**. |
 | Je ziet jezelf wel, de ander niet | Wacht een paar seconden. Lukt het niet: het netwerk laat geen rechtstreekse verbinding toe (zie *Beeld en geluid*); probeer wifi in plaats van mobiel internet. |
 | `exec format error` in het logboek | De image is op een andere computer gebouwd. Bouw hem op de Pi zelf (hoofdstuk 2). |
 | Wijziging in kleuren of notebook niet zichtbaar | Bouw de image opnieuw (hoofdstuk 5) en ververs de pagina met Ctrl+F5. |

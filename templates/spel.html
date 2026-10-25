@@ -43,7 +43,6 @@
 
   {# ---------- DE TAFEL: trekstapel en open stapel op het groene vilt ---------- #}
   <div class="speeltafel">
-    {% include "beeld.html" %}
     <div class="vilt">
       <form method="post" action="{{ url_for('pak_route') }}" class="trekstapel">
         <button class="rug stapel {% if w.kan_pakken %}kan{% endif %}" type="submit" {% if not w.kan_pakken %}disabled{% endif %}
@@ -86,21 +85,26 @@
   <div class="mijn-plek">
     {{ speler(ik, bord=False) }}
     <form method="post" action="{{ url_for('speel') }}" id="mijn-hand" class="mijn-hand {% if w.ik.beurt %}aan-zet{% endif %}">
+      {# Bellen rechtsboven op de rand van je vak (alleen online) #}
+      {% include "beeld.html" %}
       <div class="hand-kop">
         <span class="stoel-naam">{{ w.ik.naam }} (jij){% if w.ik.gewonnen %} <span class="sterren">★{{ w.ik.gewonnen }}</span>{% endif %}</span>
-        {% if w.kan_passen %}
-        <button class="knop klein" type="submit" formaction="{{ url_for('pas_route') }}">Pas</button>
-        {% endif %}
       </div>
       {# --n: het aantal kaarten; ze liggen half over elkaar, met veel kaarten nog verder. #}
       <div class="hand" style="--n: {{ w.hand|length }}">
         {% for k in w.hand %}{{ kaart(k, ("speelbaar" if k.speelbaar else "") ~ (" nieuw" if k.nieuw else "") ~ (" tip" if k.tip else ""), knop=True) }}{% endfor %}
       </div>
-      {% if w.laatste_kaart_regel and not w.klaar %}
-      <label class="laatste-knop" title="Meld dit bij de kaart waarna je er nog één over hebt">
-        <input type="checkbox" name="laatste" value="1"> Laatste kaart
-      </label>
-      {% endif %}
+      {# Rechtsonder op de rand: Pas (na het pakken) en Laatste kaart #}
+      <div class="hand-knoppen">
+        {% if w.kan_passen %}
+        <button class="pas-knop" type="submit" formaction="{{ url_for('pas_route') }}">Pas</button>
+        {% endif %}
+        {% if w.laatste_kaart_regel and not w.klaar %}
+        <label class="laatste-knop" title="Meld dit bij de kaart waarna je er nog één over hebt">
+          <input type="checkbox" name="laatste" value="1"> Laatste kaart
+        </label>
+        {% endif %}
+      </div>
     </form>
   </div>
 
