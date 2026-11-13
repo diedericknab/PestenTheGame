@@ -1,6 +1,11 @@
 # Caddy zet https voor het spel en regelt de certificaten.
-# SPEL_ADRES (één adres) komt uit .env, zie docker-compose.yml:
+# De adressen komen uit .env, zie docker-compose.yml:
+# - SPEL_ADRES      het hoofdadres van het spel (één adres)
+# - EXTRA_ADRESSEN  andere adressen waarop het spel ook werkt (mag leeg; gescheiden door spaties)
+# - DOORSTUREN      adressen die doorsturen naar SPEL_ADRES, bv. het domein zonder www (mag leeg)
+# Per adres:
 # - een domeinnaam            -> Caddy haalt een gratis certificaat bij Let's Encrypt
+#   (de domeinnaam moet dan naar het publieke IP-adres van deze machine wijzen)
 # - een IP-adres of localhost -> Caddy maakt een eigen certificaat
 #   (de browser vertrouwt dat pas als je het hoofdcertificaat installeert)
 {
@@ -9,11 +14,44 @@
 	default_sni {$SPEL_ADRES:localhost}
 }
 
-{$SPEL_ADRES:localhost} {
+# Beveiligingsheaders voor elke pagina van het spel.
+(beveiliging) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		# Camera en microfoon alleen voor het spel zelf (beeld en geluid); de rest uit.
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()"
+		Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+		# Geen software en versie van de server verklappen.
+		-Server
+	}
+}
+
+{$SPEL_ADRES:localhost} {$EXTRA_ADRESSEN} {
 	# Dit tls-blok is nodig: zonder tls-instelling gebruikt Caddy default_sni niet.
 	tls {
 		protocols tls1.2 tls1.3
 	}
 	encode gzip
 	reverse_proxy spel:5000
+	import beveiliging
+}
+
+# doorsturen.localhost staat er altijd bij, zodat dit blok ook met een lege DOORSTUREN een
+# adres heeft. Caddy handelt die naam zelf af (geen certificaat van buiten) en niemand gebruikt hem.
+doorsturen.localhost {$DOORSTUREN} {
+	redir https://{$SPEL_ADRES:localhost}{uri} permanent
+}
+
+# Oliver Lux: de website draait als eigen container (OliverLuxWebsite, ~/OliverLuxWebsite) op het netwerk "websites".
+# Deze Caddy zet er https voor, omdat alleen hij poort 80 en 443 kan gebruiken.
+www.oliverlux.nl {
+	encode gzip
+	reverse_proxy OliverLuxWebsite:80
+	import beveiliging
+}
+oliverlux.nl {
+	redir https://www.oliverlux.nl{uri} permanent
 }

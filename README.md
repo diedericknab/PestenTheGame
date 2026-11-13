@@ -37,9 +37,18 @@ Na een wijziging in het notebook, de templates of de CSS: opnieuw `docker compos
 
 ## Naar de Raspberry Pi
 Deze map is de bron; pas op de Pi niets met de hand aan.
-- `.env.pi` bevat de instellingen van de Pi: `SPEL_ADRES` en `TOEGESTANE_EMAILS` (wie mag spelen).
+- `.env.pi` bevat de instellingen van de Pi: `SPEL_ADRES` (met eventueel `EXTRA_ADRESSEN` en `DOORSTUREN`) en `TOEGESTANE_EMAILS` (wie mag spelen).
   Staat niet in git (e-mailadressen).
 - `./maak_zip.sh` maakt `pesten-spel-rpi.zip` met `.env.pi` als `.env`.
+- **Registreren en goedkeuren**: wie nog geen toegang heeft, klikt op de startpagina op *Registreren*.
+  Dat opent een e-mail met onderwerp "Registreren" aan `WEBMASTER_EMAIL` (in `.env.pi`; leeg = geen knop).
+  Goedkeuren: `./toegang.sh toevoegen anna@gmail.com` (of `@familie.nl`). Intrekken: `./toegang.sh verwijderen …`,
+  overzicht: `./toegang.sh lijst`. Dit staat in `database/toegestane_emails.txt` in het volume; het spel
+  leest dat zelf opnieuw, dus niets herstarten. `TOEGESTANE_EMAILS` in `.env.pi` blijft ook gelden.
+- **Beveiliging**: het spel draait op een Docker-netwerk zonder verbinding naar buiten (`internal`),
+  alleen Caddy kan erbij. Zo kan iemand die via de website in de spel-container komt, het thuisnetwerk,
+  de router en de Pi niet bereiken. Beide containers zijn alleen-lezen, zonder extra rechten
+  (`cap_drop: ALL`, `no-new-privileges`); Caddy zet beveiligingsheaders (zie `Caddyfile`, blok `beveiliging`).
 - `./audit.sh` toont het auditlog van de Pi: mislukte en geweigerde aanmeldingen (`./audit.sh 30 alles`: alles van 30 dagen).
 - `./naar_pi.sh` zet deze versie op de Pi (`~/pesten`) en start het spel opnieuw. De database en
   het certificaat blijven bewaard; lopende spellen zijn daarna weg.

@@ -10,11 +10,20 @@
   <form method="post" action="{{ url_for('start') }}" id="startformulier">
     <fieldset>
       <legend>Jouw gegevens</legend>
-      <label class="invoer">
-        <span>E-mailadres</span>
-        <input type="email" name="email" value="{{ email_tekst }}" required maxlength="254"
-               autocomplete="email" inputmode="email" autocapitalize="off" {% if not email_tekst %}autofocus{% endif %}>
-      </label>
+      <div class="invoer">
+        <label for="email-veld"><span>E-mailadres</span></label>
+        {# Registreren: naast het e-mailadres. Opent het e-mailprogramma met een e-mail aan de
+           beheerder (onderwerp en tekst al ingevuld); na goedkeuring kun je spelen. #}
+        <div class="email-rij">
+          <input type="email" id="email-veld" name="email" value="{{ email_tekst }}" required maxlength="254"
+                 autocomplete="email" inputmode="email" autocapitalize="off" {% if not email_tekst %}autofocus{% endif %}>
+          {% if webmaster %}
+          <a class="knop registreerknop" id="registreerknop" data-aan="{{ webmaster }}"
+             href="mailto:{{ webmaster }}?subject=Registreren"
+             title="Nog geen toegang? Stuur de beheerder een e-mail om je aan te melden.">Registreren</a>
+          {% endif %}
+        </div>
+      </div>
       <label class="invoer">
         <span>Naam <small>(zien de andere spelers)</small></span>
         <input type="text" name="naam" value="{{ naam_tekst }}" required maxlength="{{ max_naam }}"
@@ -23,12 +32,12 @@
       {# Verplicht: welke avatar je krijgt in je spelerskaart. #}
       <div class="geslacht-keuze" role="radiogroup" aria-label="Avatar">
         <span class="geslacht-titel">Avatar</span>
+        {# Alleen de plaatjes, zonder tekst; de tekst in aria-label is voor schermlezers. #}
         {% for sleutel, tekst in geslachten.items() %}
         <label class="geslacht">
-          <input type="radio" name="geslacht" value="{{ sleutel }}" required
+          <input type="radio" name="geslacht" value="{{ sleutel }}" required aria-label="{{ tekst }}"
                  {% if sleutel == instellingen.geslacht %}checked{% endif %}>
           <img src="{{ url_for('static', filename='avatars/' ~ sleutel ~ '.svg') }}" alt="" draggable="false">
-          <span>{{ tekst }}</span>
         </label>
         {% endfor %}
       </div>
@@ -129,6 +138,8 @@
   </form>
 </section>
 
+<p class="voet">Laatste kaart! · <a href="https://github.com/diedericknab/PestenTheGame" target="_blank" rel="noopener">broncode op GitHub</a></p>
+
 <script>
   (function () {
     // Bekend e-mailadres: naam, instellingen en scores ophalen en invullen.
@@ -199,13 +210,16 @@
         });
         const gegevens = await antwoord.json();
         if (adres !== email.value.trim().toLowerCase()) return;   // intussen verder getypt
+        registreerknop?.classList.remove("opvallend");
         if (gegevens.bekend) {
           formulier.elements.naam.value = gegevens.naam;
           invullen(gegevens.instellingen);
           uitleg.textContent = `Welkom terug! Gespeeld: ${gegevens.gespeeld} rondes, gewonnen: ${gegevens.gewonnen}. Je instellingen staan klaar.`;
         } else if (gegevens.geen_toegang) {
-          uitleg.textContent = "Dit e-mailadres heeft geen toegang tot dit spel. Vraag de beheerder om je toe te voegen.";
-          if (!gegevens.instellingen.geslacht) uitleg.textContent += " Kies nog wel je avatar: man of vrouw.";
+          uitleg.textContent = registreerknop
+            ? "Dit e-mailadres heeft nog geen toegang. Klik op Registreren (naast je e-mailadres) en verstuur de e-mail."
+            : "Dit e-mailadres heeft geen toegang tot dit spel. Vraag de beheerder om je toe te voegen.";
+          registreerknop?.classList.add("opvallend");
         } else {
           uitleg.textContent = "Nieuw e-mailadres: vul je naam in, kies je avatar en je instellingen.";
         }
@@ -213,6 +227,24 @@
         laatsteEmail = "";
       }
     }
+    // Registreren: de e-mail aan de beheerder, met jouw naam en e-mailadres erin.
+    const registreerknop = document.getElementById("registreerknop");
+    function registreerlink() {
+      if (!registreerknop) return;
+      const naam = formulier.elements.naam.value.trim();
+      const adres = email.value.trim().toLowerCase();
+      const tekst = "Hallo,\n\n" +
+        "Ik wil graag meespelen met Laatste kaart! op www.diedericknab.nl.\n" +
+        "Wil je mijn e-mailadres toegang geven?\n\n" +
+        "Naam: " + (naam || "") + "\n" +
+        "E-mailadres om mee te spelen: " + (adres || "") + "\n\n" +
+        "Alvast bedankt!\n";
+      registreerknop.href = "mailto:" + registreerknop.dataset.aan +
+        "?subject=" + encodeURIComponent("Registreren") + "&body=" + encodeURIComponent(tekst);
+    }
+    formulier.addEventListener("input", registreerlink);
+    registreerlink();
+
     email.addEventListener("input", function () {
       clearTimeout(wachten);
       wachten = setTimeout(ophalen, 500);

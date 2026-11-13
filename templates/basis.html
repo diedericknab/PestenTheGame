@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1d6b35">
-  <title>Pesten — kaartspel</title>
+  <title>Laatste kaart! — pesten, het kaartspel</title>
   <!-- Lettertypen: Roboto Slab (de titel), Bree Serif (namen, knoppen, koppen) en Atkinson
        Hyperlegible (tekst). Zonder internet vallen ze terug op Georgia en de systeemletter. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +18,7 @@
       {% if spel and spel.online %}data-versie="{{ spel.versie }}" data-ververs="{{ ververs_ms }}"{% endif %}>
   {% from "iconen.html" import icoon %}
   <header class="kop">
-    <h1 class="logo">Pesten <small>2.0</small></h1>
+    <h1 class="logo">Laatste kaart!</h1>
     {% if email %}
     <div class="kop-rechts">
       {% if spel %}
@@ -169,7 +169,7 @@
     if (deel) {
       const link = location.origin + "/?code=" + deel.dataset.deel;
       if (navigator.share) {
-        navigator.share({ title: "Doe mee met Pesten", text: "Speel Pesten met me mee, code " + deel.dataset.deel, url: link }).catch(() => {});
+        navigator.share({ title: "Doe mee met Laatste kaart!", text: "Speel Pesten met me mee, code " + deel.dataset.deel, url: link }).catch(() => {});
       } else if (navigator.clipboard) {
         navigator.clipboard.writeText(link).then(() => { deel.textContent = "Link gekopieerd"; });
       } else {

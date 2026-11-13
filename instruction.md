@@ -352,6 +352,22 @@ Wijzig je `SPEL_ADRES`, start Caddy dan opnieuw: `docker compose up -d`.
 4. Open `https://spel.jouwdomein.nl`. De eerste keer kan het aanvragen van het certificaat
    een minuut duren; `docker logs pesten-caddy` laat zien wat er gebeurt.
 
+**Meer adressen.** Het spel kan op meer adressen tegelijk werken, elk met een eigen certificaat:
+
+```
+SPEL_ADRES=www.diedericknab.nl              # het hoofdadres
+EXTRA_ADRESSEN=diedericknab.duckdns.org     # het spel werkt ook hier
+DOORSTUREN=diedericknab.nl                  # stuurt door naar het hoofdadres
+```
+
+Meerdere adressen zet je achter elkaar, gescheiden door spaties. Elk adres moet naar je router
+wijzen. Bij een thuisaansluiting waarvan het IP-adres kan veranderen, laat je je eigen domein
+het best met een **CNAME-record** naar het DuckDNS-adres wijzen (bijvoorbeeld `www` →
+`diedericknab.duckdns.org`); het domein zonder www kan meestal alleen een A-record krijgen.
+Wijst een adres nog niet naar je router, dan werkt dat adres nog niet, maar de andere wel. Caddy
+probeert het certificaat later opnieuw; wil je niet wachten nadat je de DNS hebt aangepast,
+start Caddy dan opnieuw: `docker compose restart caddy`.
+
 ### Alleen op het eigen netwerk, met een IP-adres
 Caddy maakt een eigen certificaat. Het verkeer is dan wel versleuteld, maar de browser kent
 de uitgever niet en geeft een waarschuwing. Die verdwijnt als je het hoofdcertificaat van

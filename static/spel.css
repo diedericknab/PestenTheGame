@@ -17,9 +17,9 @@ html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
 body {
   margin: 0;
   background-color: var(--vilt);
-  /* het vilt: vage schoppen en klaveren, een ruitpatroon en een fijne korrel */
+  /* het vilt: vage schoppen en klaveren (getekend, helemaal binnen de tegel van 300px), een ruitpatroon en een fijne korrel */
   background-image:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><g fill='black' fill-opacity='.09' font-family='Georgia, serif' font-size='170'><text x='-20' y='150'>%E2%99%A0</text><text x='150' y='300'>%E2%99%A3</text></g></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><g fill='black' opacity='.09'><path transform='translate(20 15) scale(1.2)' d='M50 5C35 25 5 40 5 62c0 16 17 24 33 14 2-1 4-3 6-5-2 11-6 19-12 24h36c-6-5-10-13-12-24 2 2 4 4 6 5 16 10 33 2 33-14C95 40 65 25 50 5Z'/><g transform='translate(168 163) scale(1.2)'><circle cx='50' cy='28' r='21'/><circle cx='27' cy='58' r='21'/><circle cx='73' cy='58' r='21'/><path d='M43 45h14v15c0 14 5 26 13 35H30c8-9 13-21 13-35Z'/></g></g></svg>"),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><path d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='black' stroke-opacity='.06' stroke-width='1.5'/></svg>"),
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='k'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .18 0'/></filter><rect width='100%' height='100%' filter='url(%23k)'/></svg>"),
     radial-gradient(ellipse at 50% 30%, transparent 40%, var(--vilt-donker));
@@ -75,7 +75,7 @@ main { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
 
 /* ---------- knoppen ---------- */
 .knop {
-  display: inline-block; border: 0; border-radius: 10px; cursor: pointer;
+  display: inline-block; border: 0; border-radius: 10px; cursor: pointer; text-decoration: none;
   padding: 11px 22px; min-height: 44px;
   font-size: 1.05rem; line-height: 1.2;
   background: var(--goud); color: var(--tekst-donker);
@@ -113,7 +113,7 @@ main { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
 fieldset { border: 0; border-top: 1px solid var(--goud); margin: 0 0 14px; padding: 12px 0 4px; }
 legend { padding: 0 8px 0 0; font-size: .72rem; }
 .invoer { display: grid; gap: 4px; margin-bottom: 12px; }
-.invoer > span { font-weight: 700; }
+.invoer > span, .invoer > label > span { font-weight: 700; }
 .invoer span small { color: var(--tekst-zacht); font-weight: 400; }
 .invoer.kort { max-width: 280px; }
 input[type=email], input[type=text], input[type=number], select {
@@ -161,6 +161,16 @@ input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-v
 .tandwiel:hover .icoon, .tandwiel:focus-visible .icoon { transform: rotate(60deg); }
 .tandwiel-rij { display: flex; align-items: center; gap: 14px; margin: 4px 0 20px; }
 .tandwiel-rij .uitleg { margin: 0; }
+
+/* Registreren: knop rechts naast het e-mailadres; valt op als je adres nog geen toegang heeft */
+.email-rij { display: flex; gap: 8px; align-items: stretch; }
+.email-rij input { flex: 1 1 auto; min-width: 0; }
+.registreerknop { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 0 14px; font-size: .95rem; }
+.registreerknop.opvallend { box-shadow: 0 0 0 3px var(--goud-licht); }
+
+/* onderaan de openingspagina: de link naar de broncode */
+.voet { margin: 18px 0 0; text-align: center; font-size: .85rem; color: var(--tekst-zacht); }
+.voet a { color: var(--goud-licht); }
 
 /* ---------- wachtkamer ---------- */
 .wachtkamer-tafel { display: grid; gap: 10px; margin-bottom: 16px; }

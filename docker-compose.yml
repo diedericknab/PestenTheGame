@@ -14,11 +14,23 @@ services:
     environment:
       SPEL_HTTPS: "1"
       TZ: Europe/Amsterdam       # tijden in het auditlog in Nederlandse tijd
-      # Wie mag spelen (uit .env); leeg = iedereen.
+      # Wie mag spelen (uit .env); leeg = iedereen. Goedgekeurde aanmeldingen komen erbij
+      # uit database/toegestane_emails.txt (zie toegang.sh).
       TOEGESTANE_EMAILS: ${TOEGESTANE_EMAILS:-}
+      # Registreren: nieuwe spelers mailen dit adres; leeg = geen knop Registreren.
+      WEBMASTER_EMAIL: ${WEBMASTER_EMAIL:-}
     volumes:
       # De database (spelers, instellingen en scores).
       - database:/app/database
+    # Beveiliging: het spel zit alleen op het netwerk "intern" (internal: geen verbinding naar
+    # buiten, dus ook niet naar het thuisnetwerk, de router of de Pi zelf). Alleen Caddy kan erbij.
+    networks: [intern]
+    read_only: true            # alleen /app/database (volume) en /tmp zijn beschrijfbaar
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 200
+    mem_limit: 512m
 
   caddy:
     image: caddy:2.10
@@ -32,10 +44,29 @@ services:
       - "443:443/udp" # http/3
     environment:
       SPEL_ADRES: ${SPEL_ADRES:-localhost}
+      EXTRA_ADRESSEN: ${EXTRA_ADRESSEN:-}   # het spel werkt ook op deze adressen
+      DOORSTUREN: ${DOORSTUREN:-}           # deze adressen sturen door naar SPEL_ADRES
+    # Caddy zit op "intern" (naar het spel), "websites" (naar de website van Oliver Lux)
+    # en "web" (internet: certificaten en bezoekers).
+    networks: [intern, websites, web]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]   # poort 80 en 443
+    security_opt: ["no-new-privileges:true"]
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data       # certificaten
       - caddy_config:/config
+
+networks:
+  intern:
+    internal: true   # geen verbinding naar buiten
+  # Gedeeld met de website van Oliver Lux (../OliverLux): die zit alleen op dit netwerk.
+  websites:
+    name: websites
+    internal: true
+  web: {}
 
 volumes:
   database:
